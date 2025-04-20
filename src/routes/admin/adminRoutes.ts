@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { categoryController } from "../../controllers/admin/category.controller";
 import { attributeController } from "../../controllers/admin/attribute.controller";
+import { productController } from "../../controllers/admin/product.controller";
+import { variantController } from "../../controllers/admin/variant.controller";
 const router = Router();
 
-//category
+// category
 router.get("/categories", categoryController.getAllCategories);
 router.get("/categories/:categoryId", categoryController.getCategoryById);
 router.post("/categories", categoryController.createCategory);
@@ -16,11 +18,21 @@ router.get(
   "/attributes/:categoryId",
   attributeController.getAttributesByCategory
 );
-
 router.get(
   "/attributes/details/:attributeId",
   attributeController.getAttributeById
 );
-
 router.put("/attributes/:attributeId", attributeController.updateAttribute);
+
+// products
+router.get("/products", productController.getAllProducts);
+router.get("/products/:productId", productController.getProductById);
+router.post("/products", productController.createProduct);
+router.put("/products/:productId", productController.updateProduct);
+
+//variants
+router.get("/variants", variantController.getProductVariants);
+router.post("/variants", variantController.createVariants);
+router.put("/variants/:variantSku", variantController.updateVariant);
+
 export default router;
