@@ -5,6 +5,7 @@ import { createResponse } from "../../utils/apiResponseUtils";
 export const getCategoryProducts: RequestHandler = async (req, res) => {
   try {
     const { categoryId } = req.params;
+    console.log("categoryId:product.controller", categoryId);
     if (!categoryId) {
       return createResponse(res, 400, null, "categoryId parameter is required");
     }
