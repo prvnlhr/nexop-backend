@@ -1,21 +1,26 @@
 import { Router } from "express";
-// import filesController from "../controllers/filesController";
-// import upload from "../middlewares/multerUpload";
+import { categoryController } from "../../controllers/admin/category.controller";
+import { attributeController } from "../../controllers/admin/attribute.controller";
 const router = Router();
 
-// // Route to get all files for the user
-// router.get("/", filesController.getAllFiles);
+//category
+router.get("/categories", categoryController.getAllCategories);
+router.get("/categories/:categoryId", categoryController.getCategoryById);
+router.post("/categories", categoryController.createCategory);
+router.patch("/categories/:categoryId", categoryController.updateCategory);
 
-// // Route to upload a file and save its metadata
-// router.post("/upload", upload.any(), filesController.addFiles);
+// attributes
+router.post("/attributes", attributeController.createAttribute);
+router.get("/attributes", attributeController.getAllAttributes);
+router.get(
+  "/attributes/:categoryId",
+  attributeController.getAttributesByCategory
+);
 
-// // Route to get a specific file's metadata
-// router.get("/:fileId", filesController.getFile);
+router.get(
+  "/attributes/details/:attributeId",
+  attributeController.getAttributeById
+);
 
-// // Route to delete a file
-// router.delete("/:fileId", filesController.deleteFiles);
-
-// // Route to update file (e.g., rename)
-// router.patch("/:fileId", filesController.updateFile);
-
+router.put("/attributes/:attributeId", attributeController.updateAttribute);
 export default router;

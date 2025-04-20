@@ -4160,6 +4160,7 @@ export namespace Prisma {
     value: string | null
     attributeId: number | null
     createdAt: Date | null
+    active: boolean | null
   }
 
   export type AttributeOptionMaxAggregateOutputType = {
@@ -4167,6 +4168,7 @@ export namespace Prisma {
     value: string | null
     attributeId: number | null
     createdAt: Date | null
+    active: boolean | null
   }
 
   export type AttributeOptionCountAggregateOutputType = {
@@ -4174,6 +4176,7 @@ export namespace Prisma {
     value: number
     attributeId: number
     createdAt: number
+    active: number
     _all: number
   }
 
@@ -4193,6 +4196,7 @@ export namespace Prisma {
     value?: true
     attributeId?: true
     createdAt?: true
+    active?: true
   }
 
   export type AttributeOptionMaxAggregateInputType = {
@@ -4200,6 +4204,7 @@ export namespace Prisma {
     value?: true
     attributeId?: true
     createdAt?: true
+    active?: true
   }
 
   export type AttributeOptionCountAggregateInputType = {
@@ -4207,6 +4212,7 @@ export namespace Prisma {
     value?: true
     attributeId?: true
     createdAt?: true
+    active?: true
     _all?: true
   }
 
@@ -4301,6 +4307,7 @@ export namespace Prisma {
     value: string
     attributeId: number
     createdAt: Date
+    active: boolean
     _count: AttributeOptionCountAggregateOutputType | null
     _avg: AttributeOptionAvgAggregateOutputType | null
     _sum: AttributeOptionSumAggregateOutputType | null
@@ -4327,6 +4334,7 @@ export namespace Prisma {
     value?: boolean
     attributeId?: boolean
     createdAt?: boolean
+    active?: boolean
     attribute?: boolean | AttributeDefaultArgs<ExtArgs>
     VariantAttribute?: boolean | AttributeOption$VariantAttributeArgs<ExtArgs>
     _count?: boolean | AttributeOptionCountOutputTypeDefaultArgs<ExtArgs>
@@ -4337,6 +4345,7 @@ export namespace Prisma {
     value?: boolean
     attributeId?: boolean
     createdAt?: boolean
+    active?: boolean
     attribute?: boolean | AttributeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["attributeOption"]>
 
@@ -4345,6 +4354,7 @@ export namespace Prisma {
     value?: boolean
     attributeId?: boolean
     createdAt?: boolean
+    active?: boolean
     attribute?: boolean | AttributeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["attributeOption"]>
 
@@ -4353,9 +4363,10 @@ export namespace Prisma {
     value?: boolean
     attributeId?: boolean
     createdAt?: boolean
+    active?: boolean
   }
 
-  export type AttributeOptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "value" | "attributeId" | "createdAt", ExtArgs["result"]["attributeOption"]>
+  export type AttributeOptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "value" | "attributeId" | "createdAt" | "active", ExtArgs["result"]["attributeOption"]>
   export type AttributeOptionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     attribute?: boolean | AttributeDefaultArgs<ExtArgs>
     VariantAttribute?: boolean | AttributeOption$VariantAttributeArgs<ExtArgs>
@@ -4379,6 +4390,7 @@ export namespace Prisma {
       value: string
       attributeId: number
       createdAt: Date
+      active: boolean
     }, ExtArgs["result"]["attributeOption"]>
     composites: {}
   }
@@ -4808,6 +4820,7 @@ export namespace Prisma {
     readonly value: FieldRef<"AttributeOption", 'String'>
     readonly attributeId: FieldRef<"AttributeOption", 'Int'>
     readonly createdAt: FieldRef<"AttributeOption", 'DateTime'>
+    readonly active: FieldRef<"AttributeOption", 'Boolean'>
   }
     
 
@@ -11042,7 +11055,8 @@ export namespace Prisma {
     id: 'id',
     value: 'value',
     attributeId: 'attributeId',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    active: 'active'
   };
 
   export type AttributeOptionScalarFieldEnum = (typeof AttributeOptionScalarFieldEnum)[keyof typeof AttributeOptionScalarFieldEnum]
@@ -11387,6 +11401,7 @@ export namespace Prisma {
     value?: StringFilter<"AttributeOption"> | string
     attributeId?: IntFilter<"AttributeOption"> | number
     createdAt?: DateTimeFilter<"AttributeOption"> | Date | string
+    active?: BoolFilter<"AttributeOption"> | boolean
     attribute?: XOR<AttributeScalarRelationFilter, AttributeWhereInput>
     VariantAttribute?: VariantAttributeListRelationFilter
   }
@@ -11396,27 +11411,31 @@ export namespace Prisma {
     value?: SortOrder
     attributeId?: SortOrder
     createdAt?: SortOrder
+    active?: SortOrder
     attribute?: AttributeOrderByWithRelationInput
     VariantAttribute?: VariantAttributeOrderByRelationAggregateInput
   }
 
   export type AttributeOptionWhereUniqueInput = Prisma.AtLeast<{
     id?: number
+    attributeId_value?: AttributeOptionAttributeIdValueCompoundUniqueInput
     AND?: AttributeOptionWhereInput | AttributeOptionWhereInput[]
     OR?: AttributeOptionWhereInput[]
     NOT?: AttributeOptionWhereInput | AttributeOptionWhereInput[]
     value?: StringFilter<"AttributeOption"> | string
     attributeId?: IntFilter<"AttributeOption"> | number
     createdAt?: DateTimeFilter<"AttributeOption"> | Date | string
+    active?: BoolFilter<"AttributeOption"> | boolean
     attribute?: XOR<AttributeScalarRelationFilter, AttributeWhereInput>
     VariantAttribute?: VariantAttributeListRelationFilter
-  }, "id">
+  }, "id" | "attributeId_value">
 
   export type AttributeOptionOrderByWithAggregationInput = {
     id?: SortOrder
     value?: SortOrder
     attributeId?: SortOrder
     createdAt?: SortOrder
+    active?: SortOrder
     _count?: AttributeOptionCountOrderByAggregateInput
     _avg?: AttributeOptionAvgOrderByAggregateInput
     _max?: AttributeOptionMaxOrderByAggregateInput
@@ -11432,6 +11451,7 @@ export namespace Prisma {
     value?: StringWithAggregatesFilter<"AttributeOption"> | string
     attributeId?: IntWithAggregatesFilter<"AttributeOption"> | number
     createdAt?: DateTimeWithAggregatesFilter<"AttributeOption"> | Date | string
+    active?: BoolWithAggregatesFilter<"AttributeOption"> | boolean
   }
 
   export type ProductWhereInput = {
@@ -11931,6 +11951,7 @@ export namespace Prisma {
   export type AttributeOptionCreateInput = {
     value: string
     createdAt?: Date | string
+    active?: boolean
     attribute: AttributeCreateNestedOneWithoutOptionsInput
     VariantAttribute?: VariantAttributeCreateNestedManyWithoutOptionInput
   }
@@ -11940,12 +11961,14 @@ export namespace Prisma {
     value: string
     attributeId: number
     createdAt?: Date | string
+    active?: boolean
     VariantAttribute?: VariantAttributeUncheckedCreateNestedManyWithoutOptionInput
   }
 
   export type AttributeOptionUpdateInput = {
     value?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    active?: BoolFieldUpdateOperationsInput | boolean
     attribute?: AttributeUpdateOneRequiredWithoutOptionsNestedInput
     VariantAttribute?: VariantAttributeUpdateManyWithoutOptionNestedInput
   }
@@ -11955,6 +11978,7 @@ export namespace Prisma {
     value?: StringFieldUpdateOperationsInput | string
     attributeId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    active?: BoolFieldUpdateOperationsInput | boolean
     VariantAttribute?: VariantAttributeUncheckedUpdateManyWithoutOptionNestedInput
   }
 
@@ -11963,11 +11987,13 @@ export namespace Prisma {
     value: string
     attributeId: number
     createdAt?: Date | string
+    active?: boolean
   }
 
   export type AttributeOptionUpdateManyMutationInput = {
     value?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    active?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type AttributeOptionUncheckedUpdateManyInput = {
@@ -11975,6 +12001,7 @@ export namespace Prisma {
     value?: StringFieldUpdateOperationsInput | string
     attributeId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    active?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ProductCreateInput = {
@@ -12591,11 +12618,17 @@ export namespace Prisma {
     isNot?: AttributeWhereInput
   }
 
+  export type AttributeOptionAttributeIdValueCompoundUniqueInput = {
+    attributeId: number
+    value: string
+  }
+
   export type AttributeOptionCountOrderByAggregateInput = {
     id?: SortOrder
     value?: SortOrder
     attributeId?: SortOrder
     createdAt?: SortOrder
+    active?: SortOrder
   }
 
   export type AttributeOptionAvgOrderByAggregateInput = {
@@ -12608,6 +12641,7 @@ export namespace Prisma {
     value?: SortOrder
     attributeId?: SortOrder
     createdAt?: SortOrder
+    active?: SortOrder
   }
 
   export type AttributeOptionMinOrderByAggregateInput = {
@@ -12615,6 +12649,7 @@ export namespace Prisma {
     value?: SortOrder
     attributeId?: SortOrder
     createdAt?: SortOrder
+    active?: SortOrder
   }
 
   export type AttributeOptionSumOrderByAggregateInput = {
@@ -14086,6 +14121,7 @@ export namespace Prisma {
   export type AttributeOptionCreateWithoutAttributeInput = {
     value: string
     createdAt?: Date | string
+    active?: boolean
     VariantAttribute?: VariantAttributeCreateNestedManyWithoutOptionInput
   }
 
@@ -14093,6 +14129,7 @@ export namespace Prisma {
     id?: number
     value: string
     createdAt?: Date | string
+    active?: boolean
     VariantAttribute?: VariantAttributeUncheckedCreateNestedManyWithoutOptionInput
   }
 
@@ -14184,6 +14221,7 @@ export namespace Prisma {
     value?: StringFilter<"AttributeOption"> | string
     attributeId?: IntFilter<"AttributeOption"> | number
     createdAt?: DateTimeFilter<"AttributeOption"> | Date | string
+    active?: BoolFilter<"AttributeOption"> | boolean
   }
 
   export type VariantAttributeUpsertWithWhereUniqueWithoutAttributeInput = {
@@ -14770,6 +14808,7 @@ export namespace Prisma {
   export type AttributeOptionCreateWithoutVariantAttributeInput = {
     value: string
     createdAt?: Date | string
+    active?: boolean
     attribute: AttributeCreateNestedOneWithoutOptionsInput
   }
 
@@ -14778,6 +14817,7 @@ export namespace Prisma {
     value: string
     attributeId: number
     createdAt?: Date | string
+    active?: boolean
   }
 
   export type AttributeOptionCreateOrConnectWithoutVariantAttributeInput = {
@@ -14865,6 +14905,7 @@ export namespace Prisma {
   export type AttributeOptionUpdateWithoutVariantAttributeInput = {
     value?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    active?: BoolFieldUpdateOperationsInput | boolean
     attribute?: AttributeUpdateOneRequiredWithoutOptionsNestedInput
   }
 
@@ -14873,6 +14914,7 @@ export namespace Prisma {
     value?: StringFieldUpdateOperationsInput | string
     attributeId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    active?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type VariantCreateWithoutImagesInput = {
@@ -15068,6 +15110,7 @@ export namespace Prisma {
     id?: number
     value: string
     createdAt?: Date | string
+    active?: boolean
   }
 
   export type VariantAttributeCreateManyAttributeInput = {
@@ -15079,6 +15122,7 @@ export namespace Prisma {
   export type AttributeOptionUpdateWithoutAttributeInput = {
     value?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    active?: BoolFieldUpdateOperationsInput | boolean
     VariantAttribute?: VariantAttributeUpdateManyWithoutOptionNestedInput
   }
 
@@ -15086,6 +15130,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     value?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    active?: BoolFieldUpdateOperationsInput | boolean
     VariantAttribute?: VariantAttributeUncheckedUpdateManyWithoutOptionNestedInput
   }
 
@@ -15093,6 +15138,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     value?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    active?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type VariantAttributeUpdateWithoutAttributeInput = {

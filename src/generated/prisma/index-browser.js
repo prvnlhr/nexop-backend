@@ -140,7 +140,8 @@ exports.Prisma.AttributeOptionScalarFieldEnum = {
   id: 'id',
   value: 'value',
   attributeId: 'attributeId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  active: 'active'
 };
 
 exports.Prisma.ProductScalarFieldEnum = {

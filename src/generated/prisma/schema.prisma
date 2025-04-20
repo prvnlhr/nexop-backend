@@ -45,7 +45,9 @@ model AttributeOption {
   attributeId      Int
   createdAt        DateTime           @default(now())
   VariantAttribute VariantAttribute[]
+  active           Boolean            @default(true)
 
+  @@unique([attributeId, value])
   @@index([attributeId])
 }
 
@@ -121,6 +123,7 @@ model VariantAttribute {
   @@id([variantId, attributeId])
   @@index([variantId])
   @@index([attributeId, optionId])
+  @@index([optionId])
 }
 
 model VariantImage {
