@@ -250,7 +250,233 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
     );
   }
 };
+export const getProductById: RequestHandler = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { attributeId, optionId } = req.query; // Get query params for selected attribute/option
 
+    if (!productId || isNaN(parseInt(productId))) {
+      return createResponse(
+        res,
+        400,
+        null,
+        "Valid productId parameter is required"
+      );
+    }
+
+    // Parse query params if provided
+    const parsedAttributeId = attributeId
+      ? parseInt(attributeId as string)
+      : null;
+    const parsedOptionId = optionId ? parseInt(optionId as string) : null;
+
+    // Fetch the product with images, category attributes, and variant images
+    const productDetailsDB = await prisma.product.findUnique({
+      where: {
+        id: parseInt(productId),
+        status: "PUBLISHED",
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        brand: true,
+        basePrice: true,
+        images: {
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            isThumbnail: true,
+            order: true,
+          },
+          orderBy: {
+            order: "asc",
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            attributes: {
+              select: {
+                id: true,
+                name: true,
+                isFilterable: true,
+                displayOrder: true,
+                options: {
+                  select: {
+                    id: true,
+                    value: true,
+                    active: true,
+                  },
+                  where: {
+                    active: true,
+                  },
+                },
+              },
+              orderBy: {
+                displayOrder: "asc",
+              },
+            },
+          },
+        },
+        variants: {
+          where: {
+            status: "ACTIVE",
+          },
+          select: {
+            id: true,
+            sku: true,
+            price: true,
+            stock: true,
+            attributes: {
+              select: {
+                attribute: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+                option: {
+                  select: {
+                    id: true,
+                    value: true,
+                  },
+                },
+              },
+            },
+            images: {
+              // Include variant images
+              select: {
+                id: true,
+                url: true,
+                order: true,
+              },
+              orderBy: {
+                order: "asc",
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!productDetailsDB) {
+      return createResponse(
+        res,
+        404,
+        null,
+        "Product not found or not published"
+      );
+    }
+
+    // Find the selected variant if attributeId and optionId are provided
+    let selectedVariant = null;
+    if (parsedAttributeId && parsedOptionId) {
+      selectedVariant = productDetailsDB.variants.find((variant) =>
+        variant.attributes.some(
+          (attr) =>
+            attr.attribute.id === parsedAttributeId &&
+            attr.option.id === parsedOptionId
+        )
+      );
+    }
+
+    // Format the response
+    const productDetails = {
+      id: productDetailsDB.id,
+      name: productDetailsDB.name,
+      slug: productDetailsDB.slug,
+      description: productDetailsDB.description,
+      brand: productDetailsDB.brand,
+      basePrice: productDetailsDB.basePrice,
+      images: selectedVariant
+        ? selectedVariant.images.map((image) => ({
+            id: image.id,
+            url: image.url,
+            altText: null, // VariantImage has no altText in schema
+            isThumbnail: image.order === 0, // Assume first image is thumbnail
+            order: image.order,
+          }))
+        : productDetailsDB.images.map((image) => ({
+            id: image.id,
+            url: image.url,
+            altText: image.altText,
+            isThumbnail: image.isThumbnail,
+            order: image.order,
+          })),
+      attributes: productDetailsDB.category.attributes.map((attr) => ({
+        id: attr.id,
+        name: attr.name,
+        isFilterable: attr.isFilterable,
+        displayOrder: attr.displayOrder,
+        options: attr.options.map((opt) => ({
+          id: opt.id,
+          value: opt.value,
+          active: opt.active,
+        })),
+      })),
+      variants: productDetailsDB.variants.map((variant) => ({
+        id: variant.id,
+        sku: variant.sku,
+        price: variant.price,
+        stock: variant.stock,
+        attributes: variant.attributes.map((va) => ({
+          attributeId: va.attribute.id,
+          attributeName: va.attribute.name,
+          optionId: va.option.id,
+          optionValue: va.option.value,
+        })),
+        images: variant.images.map((image) => ({
+          id: image.id,
+          url: image.url,
+          altText: null,
+          isThumbnail: image.order === 0,
+          order: image.order,
+        })),
+      })),
+      category: {
+        id: productDetailsDB.category.id,
+        name: productDetailsDB.category.name,
+        slug: productDetailsDB.category.slug,
+      },
+      selectedVariant: selectedVariant
+        ? {
+            id: selectedVariant.id,
+            price: selectedVariant.price,
+            sku: selectedVariant.sku,
+            stock: selectedVariant.stock,
+            attributes: selectedVariant.attributes.map((va) => ({
+              attributeId: va.attribute.id,
+              attributeName: va.attribute.name,
+              optionId: va.option.id,
+              optionValue: va.option.value,
+            })),
+          }
+        : null,
+    };
+
+    return createResponse(
+      res,
+      200,
+      productDetails,
+      null,
+      "Product details fetched successfully"
+    );
+  } catch (error) {
+    console.error("Get Product By ID Error:", error);
+    return createResponse(
+      res,
+      500,
+      null,
+      error instanceof Error ? error.message : "Internal server error"
+    );
+  }
+};
 export const productsController = {
   getCategoryProducts,
+  getProductById,
 };
