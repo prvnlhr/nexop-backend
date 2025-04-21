@@ -6509,6 +6509,7 @@ export namespace Prisma {
   export type ProductImageMinAggregateOutputType = {
     id: number | null
     url: string | null
+    publicId: string | null
     altText: string | null
     isThumbnail: boolean | null
     order: number | null
@@ -6519,6 +6520,7 @@ export namespace Prisma {
   export type ProductImageMaxAggregateOutputType = {
     id: number | null
     url: string | null
+    publicId: string | null
     altText: string | null
     isThumbnail: boolean | null
     order: number | null
@@ -6529,6 +6531,7 @@ export namespace Prisma {
   export type ProductImageCountAggregateOutputType = {
     id: number
     url: number
+    publicId: number
     altText: number
     isThumbnail: number
     order: number
@@ -6553,6 +6556,7 @@ export namespace Prisma {
   export type ProductImageMinAggregateInputType = {
     id?: true
     url?: true
+    publicId?: true
     altText?: true
     isThumbnail?: true
     order?: true
@@ -6563,6 +6567,7 @@ export namespace Prisma {
   export type ProductImageMaxAggregateInputType = {
     id?: true
     url?: true
+    publicId?: true
     altText?: true
     isThumbnail?: true
     order?: true
@@ -6573,6 +6578,7 @@ export namespace Prisma {
   export type ProductImageCountAggregateInputType = {
     id?: true
     url?: true
+    publicId?: true
     altText?: true
     isThumbnail?: true
     order?: true
@@ -6670,6 +6676,7 @@ export namespace Prisma {
   export type ProductImageGroupByOutputType = {
     id: number
     url: string
+    publicId: string | null
     altText: string | null
     isThumbnail: boolean
     order: number
@@ -6699,6 +6706,7 @@ export namespace Prisma {
   export type ProductImageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     url?: boolean
+    publicId?: boolean
     altText?: boolean
     isThumbnail?: boolean
     order?: boolean
@@ -6710,6 +6718,7 @@ export namespace Prisma {
   export type ProductImageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     url?: boolean
+    publicId?: boolean
     altText?: boolean
     isThumbnail?: boolean
     order?: boolean
@@ -6721,6 +6730,7 @@ export namespace Prisma {
   export type ProductImageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     url?: boolean
+    publicId?: boolean
     altText?: boolean
     isThumbnail?: boolean
     order?: boolean
@@ -6732,6 +6742,7 @@ export namespace Prisma {
   export type ProductImageSelectScalar = {
     id?: boolean
     url?: boolean
+    publicId?: boolean
     altText?: boolean
     isThumbnail?: boolean
     order?: boolean
@@ -6739,7 +6750,7 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type ProductImageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "url" | "altText" | "isThumbnail" | "order" | "productId" | "createdAt", ExtArgs["result"]["productImage"]>
+  export type ProductImageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "url" | "publicId" | "altText" | "isThumbnail" | "order" | "productId" | "createdAt", ExtArgs["result"]["productImage"]>
   export type ProductImageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     product?: boolean | ProductDefaultArgs<ExtArgs>
   }
@@ -6758,6 +6769,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: number
       url: string
+      publicId: string | null
       altText: string | null
       isThumbnail: boolean
       order: number
@@ -7189,6 +7201,7 @@ export namespace Prisma {
   interface ProductImageFieldRefs {
     readonly id: FieldRef<"ProductImage", 'Int'>
     readonly url: FieldRef<"ProductImage", 'String'>
+    readonly publicId: FieldRef<"ProductImage", 'String'>
     readonly altText: FieldRef<"ProductImage", 'String'>
     readonly isThumbnail: FieldRef<"ProductImage", 'Boolean'>
     readonly order: FieldRef<"ProductImage", 'Int'>
@@ -7636,6 +7649,8 @@ export namespace Prisma {
 
   export type VariantMinAggregateOutputType = {
     id: number | null
+    name: string | null
+    slug: string | null
     sku: string | null
     price: number | null
     stock: number | null
@@ -7647,6 +7662,8 @@ export namespace Prisma {
 
   export type VariantMaxAggregateOutputType = {
     id: number | null
+    name: string | null
+    slug: string | null
     sku: string | null
     price: number | null
     stock: number | null
@@ -7658,6 +7675,8 @@ export namespace Prisma {
 
   export type VariantCountAggregateOutputType = {
     id: number
+    name: number
+    slug: number
     sku: number
     price: number
     stock: number
@@ -7685,6 +7704,8 @@ export namespace Prisma {
 
   export type VariantMinAggregateInputType = {
     id?: true
+    name?: true
+    slug?: true
     sku?: true
     price?: true
     stock?: true
@@ -7696,6 +7717,8 @@ export namespace Prisma {
 
   export type VariantMaxAggregateInputType = {
     id?: true
+    name?: true
+    slug?: true
     sku?: true
     price?: true
     stock?: true
@@ -7707,6 +7730,8 @@ export namespace Prisma {
 
   export type VariantCountAggregateInputType = {
     id?: true
+    name?: true
+    slug?: true
     sku?: true
     price?: true
     stock?: true
@@ -7805,6 +7830,8 @@ export namespace Prisma {
 
   export type VariantGroupByOutputType = {
     id: number
+    name: string
+    slug: string
     sku: string
     price: number
     stock: number
@@ -7835,6 +7862,8 @@ export namespace Prisma {
 
   export type VariantSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    name?: boolean
+    slug?: boolean
     sku?: boolean
     price?: boolean
     stock?: boolean
@@ -7850,6 +7879,8 @@ export namespace Prisma {
 
   export type VariantSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    name?: boolean
+    slug?: boolean
     sku?: boolean
     price?: boolean
     stock?: boolean
@@ -7862,6 +7893,8 @@ export namespace Prisma {
 
   export type VariantSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    name?: boolean
+    slug?: boolean
     sku?: boolean
     price?: boolean
     stock?: boolean
@@ -7874,6 +7907,8 @@ export namespace Prisma {
 
   export type VariantSelectScalar = {
     id?: boolean
+    name?: boolean
+    slug?: boolean
     sku?: boolean
     price?: boolean
     stock?: boolean
@@ -7883,7 +7918,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type VariantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sku" | "price" | "stock" | "status" | "productId" | "createdAt" | "updatedAt", ExtArgs["result"]["variant"]>
+  export type VariantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "sku" | "price" | "stock" | "status" | "productId" | "createdAt" | "updatedAt", ExtArgs["result"]["variant"]>
   export type VariantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     product?: boolean | ProductDefaultArgs<ExtArgs>
     attributes?: boolean | Variant$attributesArgs<ExtArgs>
@@ -7906,6 +7941,8 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
+      name: string
+      slug: string
       sku: string
       price: number
       stock: number
@@ -8340,6 +8377,8 @@ export namespace Prisma {
    */
   interface VariantFieldRefs {
     readonly id: FieldRef<"Variant", 'Int'>
+    readonly name: FieldRef<"Variant", 'String'>
+    readonly slug: FieldRef<"Variant", 'String'>
     readonly sku: FieldRef<"Variant", 'String'>
     readonly price: FieldRef<"Variant", 'Float'>
     readonly stock: FieldRef<"Variant", 'Int'>
@@ -9939,6 +9978,7 @@ export namespace Prisma {
   export type VariantImageMinAggregateOutputType = {
     id: number | null
     url: string | null
+    publicId: string | null
     order: number | null
     variantId: number | null
     createdAt: Date | null
@@ -9947,6 +9987,7 @@ export namespace Prisma {
   export type VariantImageMaxAggregateOutputType = {
     id: number | null
     url: string | null
+    publicId: string | null
     order: number | null
     variantId: number | null
     createdAt: Date | null
@@ -9955,6 +9996,7 @@ export namespace Prisma {
   export type VariantImageCountAggregateOutputType = {
     id: number
     url: number
+    publicId: number
     order: number
     variantId: number
     createdAt: number
@@ -9977,6 +10019,7 @@ export namespace Prisma {
   export type VariantImageMinAggregateInputType = {
     id?: true
     url?: true
+    publicId?: true
     order?: true
     variantId?: true
     createdAt?: true
@@ -9985,6 +10028,7 @@ export namespace Prisma {
   export type VariantImageMaxAggregateInputType = {
     id?: true
     url?: true
+    publicId?: true
     order?: true
     variantId?: true
     createdAt?: true
@@ -9993,6 +10037,7 @@ export namespace Prisma {
   export type VariantImageCountAggregateInputType = {
     id?: true
     url?: true
+    publicId?: true
     order?: true
     variantId?: true
     createdAt?: true
@@ -10088,6 +10133,7 @@ export namespace Prisma {
   export type VariantImageGroupByOutputType = {
     id: number
     url: string
+    publicId: string | null
     order: number
     variantId: number
     createdAt: Date
@@ -10115,6 +10161,7 @@ export namespace Prisma {
   export type VariantImageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     url?: boolean
+    publicId?: boolean
     order?: boolean
     variantId?: boolean
     createdAt?: boolean
@@ -10124,6 +10171,7 @@ export namespace Prisma {
   export type VariantImageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     url?: boolean
+    publicId?: boolean
     order?: boolean
     variantId?: boolean
     createdAt?: boolean
@@ -10133,6 +10181,7 @@ export namespace Prisma {
   export type VariantImageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     url?: boolean
+    publicId?: boolean
     order?: boolean
     variantId?: boolean
     createdAt?: boolean
@@ -10142,12 +10191,13 @@ export namespace Prisma {
   export type VariantImageSelectScalar = {
     id?: boolean
     url?: boolean
+    publicId?: boolean
     order?: boolean
     variantId?: boolean
     createdAt?: boolean
   }
 
-  export type VariantImageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "url" | "order" | "variantId" | "createdAt", ExtArgs["result"]["variantImage"]>
+  export type VariantImageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "url" | "publicId" | "order" | "variantId" | "createdAt", ExtArgs["result"]["variantImage"]>
   export type VariantImageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     variant?: boolean | VariantDefaultArgs<ExtArgs>
   }
@@ -10166,6 +10216,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: number
       url: string
+      publicId: string | null
       order: number
       variantId: number
       createdAt: Date
@@ -10595,6 +10646,7 @@ export namespace Prisma {
   interface VariantImageFieldRefs {
     readonly id: FieldRef<"VariantImage", 'Int'>
     readonly url: FieldRef<"VariantImage", 'String'>
+    readonly publicId: FieldRef<"VariantImage", 'String'>
     readonly order: FieldRef<"VariantImage", 'Int'>
     readonly variantId: FieldRef<"VariantImage", 'Int'>
     readonly createdAt: FieldRef<"VariantImage", 'DateTime'>
@@ -11081,6 +11133,7 @@ export namespace Prisma {
   export const ProductImageScalarFieldEnum: {
     id: 'id',
     url: 'url',
+    publicId: 'publicId',
     altText: 'altText',
     isThumbnail: 'isThumbnail',
     order: 'order',
@@ -11093,6 +11146,8 @@ export namespace Prisma {
 
   export const VariantScalarFieldEnum: {
     id: 'id',
+    name: 'name',
+    slug: 'slug',
     sku: 'sku',
     price: 'price',
     stock: 'stock',
@@ -11118,6 +11173,7 @@ export namespace Prisma {
   export const VariantImageScalarFieldEnum: {
     id: 'id',
     url: 'url',
+    publicId: 'publicId',
     order: 'order',
     variantId: 'variantId',
     createdAt: 'createdAt'
@@ -11548,6 +11604,7 @@ export namespace Prisma {
     NOT?: ProductImageWhereInput | ProductImageWhereInput[]
     id?: IntFilter<"ProductImage"> | number
     url?: StringFilter<"ProductImage"> | string
+    publicId?: StringNullableFilter<"ProductImage"> | string | null
     altText?: StringNullableFilter<"ProductImage"> | string | null
     isThumbnail?: BoolFilter<"ProductImage"> | boolean
     order?: IntFilter<"ProductImage"> | number
@@ -11559,6 +11616,7 @@ export namespace Prisma {
   export type ProductImageOrderByWithRelationInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrderInput | SortOrder
     altText?: SortOrderInput | SortOrder
     isThumbnail?: SortOrder
     order?: SortOrder
@@ -11573,6 +11631,7 @@ export namespace Prisma {
     OR?: ProductImageWhereInput[]
     NOT?: ProductImageWhereInput | ProductImageWhereInput[]
     url?: StringFilter<"ProductImage"> | string
+    publicId?: StringNullableFilter<"ProductImage"> | string | null
     altText?: StringNullableFilter<"ProductImage"> | string | null
     isThumbnail?: BoolFilter<"ProductImage"> | boolean
     order?: IntFilter<"ProductImage"> | number
@@ -11584,6 +11643,7 @@ export namespace Prisma {
   export type ProductImageOrderByWithAggregationInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrderInput | SortOrder
     altText?: SortOrderInput | SortOrder
     isThumbnail?: SortOrder
     order?: SortOrder
@@ -11602,6 +11662,7 @@ export namespace Prisma {
     NOT?: ProductImageScalarWhereWithAggregatesInput | ProductImageScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"ProductImage"> | number
     url?: StringWithAggregatesFilter<"ProductImage"> | string
+    publicId?: StringNullableWithAggregatesFilter<"ProductImage"> | string | null
     altText?: StringNullableWithAggregatesFilter<"ProductImage"> | string | null
     isThumbnail?: BoolWithAggregatesFilter<"ProductImage"> | boolean
     order?: IntWithAggregatesFilter<"ProductImage"> | number
@@ -11614,6 +11675,8 @@ export namespace Prisma {
     OR?: VariantWhereInput[]
     NOT?: VariantWhereInput | VariantWhereInput[]
     id?: IntFilter<"Variant"> | number
+    name?: StringFilter<"Variant"> | string
+    slug?: StringFilter<"Variant"> | string
     sku?: StringFilter<"Variant"> | string
     price?: FloatFilter<"Variant"> | number
     stock?: IntFilter<"Variant"> | number
@@ -11628,6 +11691,8 @@ export namespace Prisma {
 
   export type VariantOrderByWithRelationInput = {
     id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
     sku?: SortOrder
     price?: SortOrder
     stock?: SortOrder
@@ -11642,10 +11707,12 @@ export namespace Prisma {
 
   export type VariantWhereUniqueInput = Prisma.AtLeast<{
     id?: number
+    slug?: string
     sku?: string
     AND?: VariantWhereInput | VariantWhereInput[]
     OR?: VariantWhereInput[]
     NOT?: VariantWhereInput | VariantWhereInput[]
+    name?: StringFilter<"Variant"> | string
     price?: FloatFilter<"Variant"> | number
     stock?: IntFilter<"Variant"> | number
     status?: EnumVariantStatusFilter<"Variant"> | $Enums.VariantStatus
@@ -11655,10 +11722,12 @@ export namespace Prisma {
     product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
     attributes?: VariantAttributeListRelationFilter
     images?: VariantImageListRelationFilter
-  }, "id" | "sku">
+  }, "id" | "slug" | "sku">
 
   export type VariantOrderByWithAggregationInput = {
     id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
     sku?: SortOrder
     price?: SortOrder
     stock?: SortOrder
@@ -11678,6 +11747,8 @@ export namespace Prisma {
     OR?: VariantScalarWhereWithAggregatesInput[]
     NOT?: VariantScalarWhereWithAggregatesInput | VariantScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Variant"> | number
+    name?: StringWithAggregatesFilter<"Variant"> | string
+    slug?: StringWithAggregatesFilter<"Variant"> | string
     sku?: StringWithAggregatesFilter<"Variant"> | string
     price?: FloatWithAggregatesFilter<"Variant"> | number
     stock?: IntWithAggregatesFilter<"Variant"> | number
@@ -11752,6 +11823,7 @@ export namespace Prisma {
     NOT?: VariantImageWhereInput | VariantImageWhereInput[]
     id?: IntFilter<"VariantImage"> | number
     url?: StringFilter<"VariantImage"> | string
+    publicId?: StringNullableFilter<"VariantImage"> | string | null
     order?: IntFilter<"VariantImage"> | number
     variantId?: IntFilter<"VariantImage"> | number
     createdAt?: DateTimeFilter<"VariantImage"> | Date | string
@@ -11761,6 +11833,7 @@ export namespace Prisma {
   export type VariantImageOrderByWithRelationInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrderInput | SortOrder
     order?: SortOrder
     variantId?: SortOrder
     createdAt?: SortOrder
@@ -11773,6 +11846,7 @@ export namespace Prisma {
     OR?: VariantImageWhereInput[]
     NOT?: VariantImageWhereInput | VariantImageWhereInput[]
     url?: StringFilter<"VariantImage"> | string
+    publicId?: StringNullableFilter<"VariantImage"> | string | null
     order?: IntFilter<"VariantImage"> | number
     variantId?: IntFilter<"VariantImage"> | number
     createdAt?: DateTimeFilter<"VariantImage"> | Date | string
@@ -11782,6 +11856,7 @@ export namespace Prisma {
   export type VariantImageOrderByWithAggregationInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrderInput | SortOrder
     order?: SortOrder
     variantId?: SortOrder
     createdAt?: SortOrder
@@ -11798,6 +11873,7 @@ export namespace Prisma {
     NOT?: VariantImageScalarWhereWithAggregatesInput | VariantImageScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"VariantImage"> | number
     url?: StringWithAggregatesFilter<"VariantImage"> | string
+    publicId?: StringNullableWithAggregatesFilter<"VariantImage"> | string | null
     order?: IntWithAggregatesFilter<"VariantImage"> | number
     variantId?: IntWithAggregatesFilter<"VariantImage"> | number
     createdAt?: DateTimeWithAggregatesFilter<"VariantImage"> | Date | string
@@ -12101,6 +12177,7 @@ export namespace Prisma {
 
   export type ProductImageCreateInput = {
     url: string
+    publicId?: string | null
     altText?: string | null
     isThumbnail?: boolean
     order?: number
@@ -12111,6 +12188,7 @@ export namespace Prisma {
   export type ProductImageUncheckedCreateInput = {
     id?: number
     url: string
+    publicId?: string | null
     altText?: string | null
     isThumbnail?: boolean
     order?: number
@@ -12120,6 +12198,7 @@ export namespace Prisma {
 
   export type ProductImageUpdateInput = {
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     altText?: NullableStringFieldUpdateOperationsInput | string | null
     isThumbnail?: BoolFieldUpdateOperationsInput | boolean
     order?: IntFieldUpdateOperationsInput | number
@@ -12130,6 +12209,7 @@ export namespace Prisma {
   export type ProductImageUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     altText?: NullableStringFieldUpdateOperationsInput | string | null
     isThumbnail?: BoolFieldUpdateOperationsInput | boolean
     order?: IntFieldUpdateOperationsInput | number
@@ -12140,6 +12220,7 @@ export namespace Prisma {
   export type ProductImageCreateManyInput = {
     id?: number
     url: string
+    publicId?: string | null
     altText?: string | null
     isThumbnail?: boolean
     order?: number
@@ -12149,6 +12230,7 @@ export namespace Prisma {
 
   export type ProductImageUpdateManyMutationInput = {
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     altText?: NullableStringFieldUpdateOperationsInput | string | null
     isThumbnail?: BoolFieldUpdateOperationsInput | boolean
     order?: IntFieldUpdateOperationsInput | number
@@ -12158,6 +12240,7 @@ export namespace Prisma {
   export type ProductImageUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     altText?: NullableStringFieldUpdateOperationsInput | string | null
     isThumbnail?: BoolFieldUpdateOperationsInput | boolean
     order?: IntFieldUpdateOperationsInput | number
@@ -12166,6 +12249,8 @@ export namespace Prisma {
   }
 
   export type VariantCreateInput = {
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -12179,6 +12264,8 @@ export namespace Prisma {
 
   export type VariantUncheckedCreateInput = {
     id?: number
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -12191,6 +12278,8 @@ export namespace Prisma {
   }
 
   export type VariantUpdateInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -12204,6 +12293,8 @@ export namespace Prisma {
 
   export type VariantUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -12217,6 +12308,8 @@ export namespace Prisma {
 
   export type VariantCreateManyInput = {
     id?: number
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -12227,6 +12320,8 @@ export namespace Prisma {
   }
 
   export type VariantUpdateManyMutationInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -12237,6 +12332,8 @@ export namespace Prisma {
 
   export type VariantUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -12294,6 +12391,7 @@ export namespace Prisma {
 
   export type VariantImageCreateInput = {
     url: string
+    publicId?: string | null
     order?: number
     createdAt?: Date | string
     variant: VariantCreateNestedOneWithoutImagesInput
@@ -12302,6 +12400,7 @@ export namespace Prisma {
   export type VariantImageUncheckedCreateInput = {
     id?: number
     url: string
+    publicId?: string | null
     order?: number
     variantId: number
     createdAt?: Date | string
@@ -12309,6 +12408,7 @@ export namespace Prisma {
 
   export type VariantImageUpdateInput = {
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     variant?: VariantUpdateOneRequiredWithoutImagesNestedInput
@@ -12317,6 +12417,7 @@ export namespace Prisma {
   export type VariantImageUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     variantId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12325,6 +12426,7 @@ export namespace Prisma {
   export type VariantImageCreateManyInput = {
     id?: number
     url: string
+    publicId?: string | null
     order?: number
     variantId: number
     createdAt?: Date | string
@@ -12332,6 +12434,7 @@ export namespace Prisma {
 
   export type VariantImageUpdateManyMutationInput = {
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12339,6 +12442,7 @@ export namespace Prisma {
   export type VariantImageUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     variantId?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12813,6 +12917,7 @@ export namespace Prisma {
   export type ProductImageCountOrderByAggregateInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrder
     altText?: SortOrder
     isThumbnail?: SortOrder
     order?: SortOrder
@@ -12829,6 +12934,7 @@ export namespace Prisma {
   export type ProductImageMaxOrderByAggregateInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrder
     altText?: SortOrder
     isThumbnail?: SortOrder
     order?: SortOrder
@@ -12839,6 +12945,7 @@ export namespace Prisma {
   export type ProductImageMinOrderByAggregateInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrder
     altText?: SortOrder
     isThumbnail?: SortOrder
     order?: SortOrder
@@ -12871,6 +12978,8 @@ export namespace Prisma {
 
   export type VariantCountOrderByAggregateInput = {
     id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
     sku?: SortOrder
     price?: SortOrder
     stock?: SortOrder
@@ -12889,6 +12998,8 @@ export namespace Prisma {
 
   export type VariantMaxOrderByAggregateInput = {
     id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
     sku?: SortOrder
     price?: SortOrder
     stock?: SortOrder
@@ -12900,6 +13011,8 @@ export namespace Prisma {
 
   export type VariantMinOrderByAggregateInput = {
     id?: SortOrder
+    name?: SortOrder
+    slug?: SortOrder
     sku?: SortOrder
     price?: SortOrder
     stock?: SortOrder
@@ -12977,6 +13090,7 @@ export namespace Prisma {
   export type VariantImageCountOrderByAggregateInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrder
     order?: SortOrder
     variantId?: SortOrder
     createdAt?: SortOrder
@@ -12991,6 +13105,7 @@ export namespace Prisma {
   export type VariantImageMaxOrderByAggregateInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrder
     order?: SortOrder
     variantId?: SortOrder
     createdAt?: SortOrder
@@ -12999,6 +13114,7 @@ export namespace Prisma {
   export type VariantImageMinOrderByAggregateInput = {
     id?: SortOrder
     url?: SortOrder
+    publicId?: SortOrder
     order?: SortOrder
     variantId?: SortOrder
     createdAt?: SortOrder
@@ -14374,6 +14490,7 @@ export namespace Prisma {
 
   export type ProductImageCreateWithoutProductInput = {
     url: string
+    publicId?: string | null
     altText?: string | null
     isThumbnail?: boolean
     order?: number
@@ -14383,6 +14500,7 @@ export namespace Prisma {
   export type ProductImageUncheckedCreateWithoutProductInput = {
     id?: number
     url: string
+    publicId?: string | null
     altText?: string | null
     isThumbnail?: boolean
     order?: number
@@ -14400,6 +14518,8 @@ export namespace Prisma {
   }
 
   export type VariantCreateWithoutProductInput = {
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -14412,6 +14532,8 @@ export namespace Prisma {
 
   export type VariantUncheckedCreateWithoutProductInput = {
     id?: number
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -14486,6 +14608,7 @@ export namespace Prisma {
     NOT?: ProductImageScalarWhereInput | ProductImageScalarWhereInput[]
     id?: IntFilter<"ProductImage"> | number
     url?: StringFilter<"ProductImage"> | string
+    publicId?: StringNullableFilter<"ProductImage"> | string | null
     altText?: StringNullableFilter<"ProductImage"> | string | null
     isThumbnail?: BoolFilter<"ProductImage"> | boolean
     order?: IntFilter<"ProductImage"> | number
@@ -14514,6 +14637,8 @@ export namespace Prisma {
     OR?: VariantScalarWhereInput[]
     NOT?: VariantScalarWhereInput | VariantScalarWhereInput[]
     id?: IntFilter<"Variant"> | number
+    name?: StringFilter<"Variant"> | string
+    slug?: StringFilter<"Variant"> | string
     sku?: StringFilter<"Variant"> | string
     price?: FloatFilter<"Variant"> | number
     stock?: IntFilter<"Variant"> | number
@@ -14649,6 +14774,7 @@ export namespace Prisma {
 
   export type VariantImageCreateWithoutVariantInput = {
     url: string
+    publicId?: string | null
     order?: number
     createdAt?: Date | string
   }
@@ -14656,6 +14782,7 @@ export namespace Prisma {
   export type VariantImageUncheckedCreateWithoutVariantInput = {
     id?: number
     url: string
+    publicId?: string | null
     order?: number
     createdAt?: Date | string
   }
@@ -14746,12 +14873,15 @@ export namespace Prisma {
     NOT?: VariantImageScalarWhereInput | VariantImageScalarWhereInput[]
     id?: IntFilter<"VariantImage"> | number
     url?: StringFilter<"VariantImage"> | string
+    publicId?: StringNullableFilter<"VariantImage"> | string | null
     order?: IntFilter<"VariantImage"> | number
     variantId?: IntFilter<"VariantImage"> | number
     createdAt?: DateTimeFilter<"VariantImage"> | Date | string
   }
 
   export type VariantCreateWithoutAttributesInput = {
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -14764,6 +14894,8 @@ export namespace Prisma {
 
   export type VariantUncheckedCreateWithoutAttributesInput = {
     id?: number
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -14837,6 +14969,8 @@ export namespace Prisma {
   }
 
   export type VariantUpdateWithoutAttributesInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -14849,6 +14983,8 @@ export namespace Prisma {
 
   export type VariantUncheckedUpdateWithoutAttributesInput = {
     id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -14918,6 +15054,8 @@ export namespace Prisma {
   }
 
   export type VariantCreateWithoutImagesInput = {
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -14930,6 +15068,8 @@ export namespace Prisma {
 
   export type VariantUncheckedCreateWithoutImagesInput = {
     id?: number
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -14957,6 +15097,8 @@ export namespace Prisma {
   }
 
   export type VariantUpdateWithoutImagesInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -14969,6 +15111,8 @@ export namespace Prisma {
 
   export type VariantUncheckedUpdateWithoutImagesInput = {
     id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -15186,6 +15330,7 @@ export namespace Prisma {
   export type ProductImageCreateManyProductInput = {
     id?: number
     url: string
+    publicId?: string | null
     altText?: string | null
     isThumbnail?: boolean
     order?: number
@@ -15194,6 +15339,8 @@ export namespace Prisma {
 
   export type VariantCreateManyProductInput = {
     id?: number
+    name: string
+    slug: string
     sku: string
     price: number
     stock?: number
@@ -15204,6 +15351,7 @@ export namespace Prisma {
 
   export type ProductImageUpdateWithoutProductInput = {
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     altText?: NullableStringFieldUpdateOperationsInput | string | null
     isThumbnail?: BoolFieldUpdateOperationsInput | boolean
     order?: IntFieldUpdateOperationsInput | number
@@ -15213,6 +15361,7 @@ export namespace Prisma {
   export type ProductImageUncheckedUpdateWithoutProductInput = {
     id?: IntFieldUpdateOperationsInput | number
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     altText?: NullableStringFieldUpdateOperationsInput | string | null
     isThumbnail?: BoolFieldUpdateOperationsInput | boolean
     order?: IntFieldUpdateOperationsInput | number
@@ -15222,6 +15371,7 @@ export namespace Prisma {
   export type ProductImageUncheckedUpdateManyWithoutProductInput = {
     id?: IntFieldUpdateOperationsInput | number
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     altText?: NullableStringFieldUpdateOperationsInput | string | null
     isThumbnail?: BoolFieldUpdateOperationsInput | boolean
     order?: IntFieldUpdateOperationsInput | number
@@ -15229,6 +15379,8 @@ export namespace Prisma {
   }
 
   export type VariantUpdateWithoutProductInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -15241,6 +15393,8 @@ export namespace Prisma {
 
   export type VariantUncheckedUpdateWithoutProductInput = {
     id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -15253,6 +15407,8 @@ export namespace Prisma {
 
   export type VariantUncheckedUpdateManyWithoutProductInput = {
     id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
     stock?: IntFieldUpdateOperationsInput | number
@@ -15270,6 +15426,7 @@ export namespace Prisma {
   export type VariantImageCreateManyVariantInput = {
     id?: number
     url: string
+    publicId?: string | null
     order?: number
     createdAt?: Date | string
   }
@@ -15294,6 +15451,7 @@ export namespace Prisma {
 
   export type VariantImageUpdateWithoutVariantInput = {
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15301,6 +15459,7 @@ export namespace Prisma {
   export type VariantImageUncheckedUpdateWithoutVariantInput = {
     id?: IntFieldUpdateOperationsInput | number
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15308,6 +15467,7 @@ export namespace Prisma {
   export type VariantImageUncheckedUpdateManyWithoutVariantInput = {
     id?: IntFieldUpdateOperationsInput | number
     url?: StringFieldUpdateOperationsInput | string
+    publicId?: NullableStringFieldUpdateOperationsInput | string | null
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

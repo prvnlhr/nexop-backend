@@ -30,6 +30,13 @@ router.get("/products/:productId", productController.getProductById);
 router.post("/products", productController.createProduct);
 router.put("/products/:productId", productController.updateProduct);
 
+// new variant routes
+
+router.get(
+  "/products/:productId/variants",
+  variantController.getProductVariantsData
+);
+
 //variants
 router.get("/variants", variantController.getProductVariants);
 router.post("/variants", variantController.createVariants);
