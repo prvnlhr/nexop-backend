@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { createResponse } from "../../utils/apiResponseUtils";
 import prisma from "../../db/prisma";
+import { generateUniqueSlug } from "../../utils/slugUtils";
 
 const getAllCategories: RequestHandler = async (req, res) => {
   try {
@@ -62,11 +63,8 @@ const createCategory: RequestHandler = async (req, res) => {
     }
 
     // 3. Generate slug (simple implementation)
-    const slug = name
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]+/g, "");
-
+    // 3. Generate unique slug
+    const slug = await generateUniqueSlug(name, "Category");
     // 4. Create category in database
     const newCategory = await prisma.category.create({
       data: {

@@ -2,25 +2,84 @@ import { RequestHandler } from "express";
 import prisma from "../../db/prisma";
 import { createResponse } from "../../utils/apiResponseUtils";
 
+// TypeScript interfaces for response data
+interface FormattedProduct {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  brand: string;
+  basePrice: number;
+  thumbnail?: string;
+  minPrice: number;
+  category?: { id: number; name: string; slug: string };
+}
+
+interface AttributeResponse {
+  id: number;
+  name: string;
+  isFilterable: boolean;
+  options: { id: number; value: string }[];
+}
+
+interface CategoryResponse {
+  id: number;
+  name: string;
+  slug: string;
+  hasProducts: boolean;
+  children?: CategoryResponse[];
+}
+
+// Response types for the two cases
+interface ProductsWithAttributesResponse {
+  type: "PRODUCTS_WITH_ATTRIBUTES";
+  products: FormattedProduct[];
+  attributes: AttributeResponse[];
+  category: { id: number; name: string; slug: string };
+}
+
+interface ProductsWithSubcategoriesResponse {
+  type: "PRODUCTS_WITH_SUBCATEGORIES";
+  products: FormattedProduct[];
+  categories: CategoryResponse[];
+  parentCategory: { id: number; name: string; slug: string };
+}
+
+interface NoProductsResponse {
+  type: "NO_PRODUCTS";
+  message: string;
+}
+
+type GetCategoryProductsResponse =
+  | ProductsWithAttributesResponse
+  | ProductsWithSubcategoriesResponse
+  | NoProductsResponse;
+
 export const getCategoryProducts: RequestHandler = async (req, res) => {
   try {
-    const { categoryId } = req.params;
-    console.log("categoryId:product.controller", categoryId);
-    if (!categoryId) {
-      return createResponse(res, 400, null, "categoryId parameter is required");
+    const { categorySlug } = req.params;
+
+    if (!categorySlug) {
+      return createResponse(
+        res,
+        400,
+        null,
+        "categorySlug parameter is required"
+      );
     }
 
-    // 1. Find the category and check for direct products
+    // 1. Find the category by slug
     const category = await prisma.category.findUnique({
-      where: { id: parseInt(categoryId) },
+      where: { slug: categorySlug },
       include: {
         attributes: {
           include: {
-            options: true,
+            options: {
+              where: { active: true },
+              select: { id: true, value: true },
+            },
           },
-          orderBy: {
-            displayOrder: "asc",
-          },
+          orderBy: { displayOrder: "asc" },
         },
         _count: {
           select: {
@@ -36,7 +95,7 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
       return createResponse(res, 404, null, "Category not found");
     }
 
-    // Scenario 1: Category has direct products
+    // Case 1: Category has direct products
     if (category._count.products > 0) {
       const products = await prisma.product.findMany({
         where: {
@@ -53,62 +112,70 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
           images: {
             where: { isThumbnail: true },
             take: 1,
-            select: {
-              url: true,
-            },
+            select: { url: true },
           },
           variants: {
             where: { status: "ACTIVE" },
             take: 1,
             orderBy: { price: "asc" },
+            select: { price: true },
+          },
+          category: {
             select: {
-              price: true,
+              id: true,
+              name: true,
+              slug: true,
             },
           },
         },
         orderBy: { createdAt: "desc" },
       });
 
-      const formattedProducts = products.map((product) => ({
+      const formattedProducts: FormattedProduct[] = products.map((product) => ({
         id: product.id,
         name: product.name,
-        slug: product.slug,
+        slug: product.slug as string,
         description: product.description,
         brand: product.brand,
         basePrice: product.basePrice,
         thumbnail: product.images[0]?.url,
         minPrice: product.variants[0]?.price || product.basePrice,
+        category: product.category!, // Non-null due to schema
       }));
 
-      const attributes = category.attributes.map((attr) => ({
-        id: attr.id,
-        name: attr.name,
-        isFilterable: attr.isFilterable,
-        options: attr.options.map((opt) => ({
-          id: opt.id,
-          value: opt.value,
-        })),
-      }));
+      const attributes: AttributeResponse[] = category.attributes.map(
+        (attr) => ({
+          id: attr.id,
+          name: attr.name,
+          isFilterable: attr.isFilterable,
+          options: attr.options.map((opt) => ({
+            id: opt.id,
+            value: opt.value,
+          })),
+        })
+      );
+
+      const response: ProductsWithAttributesResponse = {
+        type: "PRODUCTS_WITH_ATTRIBUTES",
+        products: formattedProducts,
+        attributes,
+        category: {
+          id: category.id,
+          name: category.name,
+          slug: category.slug,
+        },
+      };
 
       return createResponse(
         res,
         200,
-        {
-          type: "PRODUCTS_WITH_ATTRIBUTES",
-          products: formattedProducts,
-          attributes,
-          category: {
-            id: category.id,
-            name: category.name,
-            slug: category.slug,
-          },
-        },
+        response,
         null,
         "Products with attributes fetched successfully"
       );
     }
 
-    // Scenario 2: No direct products - get child categories and their products
+    // Case 2: No direct products - get child categories and their products
     const childCategories = await prisma.category.findMany({
       where: {
         parentId: category.id,
@@ -147,16 +214,12 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
     ];
 
     if (productiveCategoryIds.length === 0) {
-      return createResponse(
-        res,
-        200,
-        {
-          type: "NO_PRODUCTS",
-          message: "No products found in this category or its subcategories",
-        },
-        null,
-        "No products available"
-      );
+      const response: NoProductsResponse = {
+        type: "NO_PRODUCTS",
+        message: "No products found in this category or its subcategories",
+      };
+
+      return createResponse(res, 200, response, null, "No products available");
     }
 
     // Fetch products from all productive subcategories
@@ -175,17 +238,13 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
         images: {
           where: { isThumbnail: true },
           take: 1,
-          select: {
-            url: true,
-          },
+          select: { url: true },
         },
         variants: {
           where: { status: "ACTIVE" },
           take: 1,
           orderBy: { price: "asc" },
-          select: {
-            price: true,
-          },
+          select: { price: true },
         },
         category: {
           select: {
@@ -198,45 +257,49 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
 
-    const formattedProducts = products.map((product) => ({
+    const formattedProducts: FormattedProduct[] = products.map((product) => ({
       id: product.id,
       name: product.name,
-      slug: product.slug,
+      slug: product.slug as string,
       description: product.description,
       brand: product.brand,
       basePrice: product.basePrice,
       thumbnail: product.images[0]?.url,
       minPrice: product.variants[0]?.price || product.basePrice,
-      category: product.category,
+      category: product.category!,
     }));
 
     // Format child categories for sidebar
-    const sidebarCategories = childCategories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      hasProducts: category._count.products > 0,
-      children: category.children.map((child) => ({
-        id: child.id,
-        name: child.name,
-        slug: child.slug,
-        hasProducts: child._count.products > 0,
-      })),
-    }));
+    const sidebarCategories: CategoryResponse[] = childCategories.map(
+      (category) => ({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        hasProducts: category._count.products > 0,
+        children: category.children.map((child) => ({
+          id: child.id,
+          name: child.name,
+          slug: child.slug,
+          hasProducts: child._count.products > 0,
+        })),
+      })
+    );
+
+    const response: ProductsWithSubcategoriesResponse = {
+      type: "PRODUCTS_WITH_SUBCATEGORIES",
+      products: formattedProducts,
+      categories: sidebarCategories,
+      parentCategory: {
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+      },
+    };
 
     return createResponse(
       res,
       200,
-      {
-        type: "PRODUCTS_WITH_SUBCATEGORIES",
-        products: formattedProducts,
-        categories: sidebarCategories,
-        parentCategory: {
-          id: category.id,
-          name: category.name,
-          slug: category.slug,
-        },
-      },
+      response,
       null,
       "Products with subcategories fetched successfully"
     );
@@ -250,31 +313,46 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
     );
   }
 };
-export const getProductById: RequestHandler = async (req, res) => {
-  try {
-    const { productId } = req.params;
-    const { attributeId, optionId } = req.query; // Get query params for selected attribute/option
 
-    if (!productId || isNaN(parseInt(productId))) {
+interface ProductDetailsResponse {
+  product: {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    brand: string;
+    price: number;
+    category: { id: number; name: string; slug: string };
+    images: { url: string; isThumbnail?: boolean }[];
+  };
+  attributes: {
+    id: number;
+    name: string;
+    options: { id: number; value: string; active: boolean }[];
+  }[];
+}
+
+export const getProductDetails: RequestHandler = async (req, res) => {
+  try {
+    const { categorySlug, productSlug } = req.params;
+    const queryParams = req.query as Record<string, string>;
+
+    if (!categorySlug || !productSlug) {
       return createResponse(
         res,
         400,
         null,
-        "Valid productId parameter is required"
+        "categorySlug and productSlug are required"
       );
     }
+    // console.log("1: Params:", { categorySlug, productSlug, queryParams });
 
-    // Parse query params if provided
-    const parsedAttributeId = attributeId
-      ? parseInt(attributeId as string)
-      : null;
-    const parsedOptionId = optionId ? parseInt(optionId as string) : null;
-
-    // Fetch the product with images, category attributes, and variant images
-    const productDetailsDB = await prisma.product.findUnique({
+    // Fetch the product with details
+    const product = await prisma.product.findFirst({
       where: {
-        id: parseInt(productId),
+        slug: productSlug,
         status: "PUBLISHED",
+        category: { slug: categorySlug },
       },
       select: {
         id: true,
@@ -283,80 +361,27 @@ export const getProductById: RequestHandler = async (req, res) => {
         description: true,
         brand: true,
         basePrice: true,
-        images: {
-          select: {
-            id: true,
-            url: true,
-            altText: true,
-            isThumbnail: true,
-            order: true,
-          },
-          orderBy: {
-            order: "asc",
-          },
-        },
         category: {
+          select: { id: true, name: true, slug: true },
+        },
+        images: {
+          select: { url: true, isThumbnail: true },
+          orderBy: { isThumbnail: "desc" },
+        },
+        variants: {
+          where: { status: "ACTIVE", stock: { gt: 0 } },
           select: {
             id: true,
             name: true,
-            slug: true,
-            attributes: {
-              select: {
-                id: true,
-                name: true,
-                isFilterable: true,
-                displayOrder: true,
-                options: {
-                  select: {
-                    id: true,
-                    value: true,
-                    active: true,
-                  },
-                  where: {
-                    active: true,
-                  },
-                },
-              },
-              orderBy: {
-                displayOrder: "asc",
-              },
-            },
-          },
-        },
-        variants: {
-          where: {
-            status: "ACTIVE",
-          },
-          select: {
-            id: true,
-            sku: true,
             price: true,
-            stock: true,
+            images: {
+              select: { url: true },
+              orderBy: { order: "asc" },
+            },
             attributes: {
               select: {
-                attribute: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-                option: {
-                  select: {
-                    id: true,
-                    value: true,
-                  },
-                },
-              },
-            },
-            images: {
-              // Include variant images
-              select: {
-                id: true,
-                url: true,
-                order: true,
-              },
-              orderBy: {
-                order: "asc",
+                attributeId: true,
+                optionId: true,
               },
             },
           },
@@ -364,110 +389,149 @@ export const getProductById: RequestHandler = async (req, res) => {
       },
     });
 
-    if (!productDetailsDB) {
+    // console.log("2: Product:", product ? product.id : "Not found");
+
+    if (!product) {
       return createResponse(
         res,
         404,
         null,
-        "Product not found or not published"
+        "Product not found or category mismatch"
       );
     }
 
-    // Find the selected variant if attributeId and optionId are provided
-    let selectedVariant = null;
-    if (parsedAttributeId && parsedOptionId) {
-      selectedVariant = productDetailsDB.variants.find((variant) =>
-        variant.attributes.some(
-          (attr) =>
-            attr.attribute.id === parsedAttributeId &&
-            attr.option.id === parsedOptionId
+    // console.log("3: Category ID:", product.category.id);
+
+    // Fetch attributes and options for the product's category
+    const attributes = await prisma.attribute.findMany({
+      where: { categoryId: product.category.id },
+      select: {
+        id: true,
+        name: true,
+        options: {
+          where: { active: true },
+          select: { id: true, value: true, active: true },
+        },
+      },
+      orderBy: { displayOrder: "asc" },
+    });
+
+    // Get relevant optionIds from product variants
+    const relevantOptionIds = new Set<number>();
+    product.variants.forEach((variant) => {
+      variant.attributes.forEach((attr) => {
+        relevantOptionIds.add(attr.optionId);
+      });
+    });
+
+    // console.log("4: Relevant optionIds:", Array.from(relevantOptionIds));
+
+    // Filter attributes.options to include only relevant options
+    const filteredAttributes = attributes.map((attr) => ({
+      id: attr.id,
+      name: attr.name,
+      options: attr.options.filter((opt) => relevantOptionIds.has(opt.id)),
+    }));
+
+    // console.log(
+    //   "5: Filtered Attributes:",
+    //   filteredAttributes.map((attr) => ({
+    //     id: attr.id,
+    //     name: attr.name,
+    //     options: attr.options.map((opt) => ({ id: opt.id, value: opt.value })),
+    //   }))
+    // );
+
+    // Parse and validate query parameters (e.g., attr_1=1)
+    let selectedVariant: (typeof product.variants)[number] | undefined;
+    const optionFilters: { attributeId: number; optionId: number }[] = [];
+    const invalidParams: string[] = [];
+    for (const [key, value] of Object.entries(queryParams)) {
+      if (!key.startsWith("attr_")) continue;
+      const attributeId = parseInt(key.replace("attr_", ""), 10);
+      const optionId = parseInt(value, 10);
+      if (isNaN(attributeId) || isNaN(optionId)) {
+        // console.log("6: Invalid query param:", { key, value });
+        invalidParams.push(`${key}=${value}`);
+        continue;
+      }
+      const attribute = attributes.find((attr) => attr.id === attributeId);
+      // console.log("7: Checking attributeId:", attributeId, "Found:", attribute);
+      if (!attribute) {
+        console.log("8: Invalid attribute ID:", attributeId);
+        invalidParams.push(`attr_${attributeId}`);
+        continue;
+      }
+      if (!attribute.options.some((opt) => opt.id === optionId)) {
+        // console.log(
+        //   "9: Invalid option ID:",
+        //   optionId,
+        //   "for attribute:",
+        //   attributeId
+        // );
+        invalidParams.push(`attr_${attributeId}=${optionId}`);
+        continue;
+      }
+      optionFilters.push({ attributeId, optionId });
+    }
+
+    // console.log(
+    //   "10: Option filters:",
+    //   optionFilters,
+    //   "Invalid params:",
+    //   invalidParams
+    // );
+
+    // Find matching variant
+    if (optionFilters.length > 0) {
+      selectedVariant = product.variants.find((variant) =>
+        optionFilters.every(({ attributeId, optionId }) =>
+          variant.attributes.some(
+            (attr) =>
+              attr.attributeId === attributeId && attr.optionId === optionId
+          )
         )
       );
     }
 
-    // Format the response
-    const productDetails = {
-      id: productDetailsDB.id,
-      name: productDetailsDB.name,
-      slug: productDetailsDB.slug,
-      description: productDetailsDB.description,
-      brand: productDetailsDB.brand,
-      basePrice: productDetailsDB.basePrice,
-      images: selectedVariant
-        ? selectedVariant.images.map((image) => ({
-            id: image.id,
-            url: image.url,
-            altText: null, // VariantImage has no altText in schema
-            isThumbnail: image.order === 0, // Assume first image is thumbnail
-            order: image.order,
-          }))
-        : productDetailsDB.images.map((image) => ({
-            id: image.id,
-            url: image.url,
-            altText: image.altText,
-            isThumbnail: image.isThumbnail,
-            order: image.order,
-          })),
-      attributes: productDetailsDB.category.attributes.map((attr) => ({
-        id: attr.id,
-        name: attr.name,
-        isFilterable: attr.isFilterable,
-        displayOrder: attr.displayOrder,
-        options: attr.options.map((opt) => ({
-          id: opt.id,
-          value: opt.value,
-          active: opt.active,
-        })),
-      })),
-      variants: productDetailsDB.variants.map((variant) => ({
-        id: variant.id,
-        sku: variant.sku,
-        price: variant.price,
-        stock: variant.stock,
-        attributes: variant.attributes.map((va) => ({
-          attributeId: va.attribute.id,
-          attributeName: va.attribute.name,
-          optionId: va.option.id,
-          optionValue: va.option.value,
-        })),
-        images: variant.images.map((image) => ({
-          id: image.id,
-          url: image.url,
-          altText: null,
-          isThumbnail: image.order === 0,
-          order: image.order,
-        })),
-      })),
-      category: {
-        id: productDetailsDB.category.id,
-        name: productDetailsDB.category.name,
-        slug: productDetailsDB.category.slug,
-      },
-      selectedVariant: selectedVariant
-        ? {
-            id: selectedVariant.id,
-            price: selectedVariant.price,
-            sku: selectedVariant.sku,
-            stock: selectedVariant.stock,
-            attributes: selectedVariant.attributes.map((va) => ({
-              attributeId: va.attribute.id,
-              attributeName: va.attribute.name,
-              optionId: va.option.id,
-              optionValue: va.option.value,
-            })),
-          }
-        : null,
+    // console.log(
+    //   "11: Selected variant:",
+    //   selectedVariant ? selectedVariant.id : "None"
+    // );
+
+    // Merge variant data into product
+    const mergedProduct = {
+      id: product.id,
+      name: selectedVariant ? selectedVariant.name : product.name,
+      slug: product.slug as string,
+      description: product.description,
+      brand: product.brand,
+      price: selectedVariant ? selectedVariant.price : product.basePrice,
+      category: product.category,
+      images: selectedVariant ? selectedVariant.images : product.images,
     };
+
+    // Format the response
+    const response: ProductDetailsResponse = {
+      product: mergedProduct,
+      attributes: filteredAttributes,
+    };
+
+    // console.log("12: Response prepared");
 
     return createResponse(
       res,
       200,
-      productDetails,
+      response,
       null,
-      "Product details fetched successfully"
+      invalidParams.length > 0
+        ? `Product details fetched, but ignored invalid query parameters: ${invalidParams.join(
+            ", "
+          )}`
+        : "Product details fetched successfully"
     );
   } catch (error) {
-    console.error("Get Product By ID Error:", error);
+    console.error("Get Product Details Error:", error);
     return createResponse(
       res,
       500,
@@ -478,5 +542,5 @@ export const getProductById: RequestHandler = async (req, res) => {
 };
 export const productsController = {
   getCategoryProducts,
-  getProductById,
+  getProductDetails,
 };

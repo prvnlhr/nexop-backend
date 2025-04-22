@@ -4,7 +4,10 @@ import { productsController } from "../../controllers/storefront/product.control
 const router = Router();
 
 router.get("/categories", categoryController.getAllCategories);
-router.get("/products/:categoryId", productsController.getCategoryProducts);
-router.get("/products/details/:productId", productsController.getProductById);
+router.get("/products/:categorySlug", productsController.getCategoryProducts);
+router.get(
+  "/products/details/:categorySlug/:productSlug",
+  productsController.getProductDetails
+);
 
 export default router;

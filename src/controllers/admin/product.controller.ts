@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { createResponse } from "../../utils/apiResponseUtils";
 import prisma from "../../db/prisma";
+import { generateUniqueSlug } from "../../utils/slugUtils";
 
 interface CreateProductRequest {
   name: string;
@@ -10,6 +11,7 @@ interface CreateProductRequest {
   categoryId: number;
   images: {
     url: string;
+    publicId?: string; // Added for Cloudinary
     isThumbnail?: boolean;
     order?: number;
   }[];
@@ -20,12 +22,17 @@ const createProduct: RequestHandler = async (req, res) => {
     // 1. Parse and validate request body
     const productData: CreateProductRequest = req.body;
 
-    if (!productData.name || !productData.categoryId) {
+    if (
+      !productData.name ||
+      !productData.brand ||
+      !productData.categoryId ||
+      productData.basePrice == null
+    ) {
       return createResponse(
         res,
         400,
         null,
-        "Product name and category are required"
+        "Product name, brand, category, and base price are required"
       );
     }
 
@@ -38,12 +45,16 @@ const createProduct: RequestHandler = async (req, res) => {
       return createResponse(res, 404, null, "Category not found");
     }
 
-    // 3. Create product in database with transaction
+    // 3. Generate unique slug
+    const slug = await generateUniqueSlug(productData.name, "Product");
+
+    // 4. Create product in database with transaction
     const newProduct = await prisma.$transaction(async (tx) => {
       // Create the product
       const product = await tx.product.create({
         data: {
           name: productData.name,
+          slug, // Set the generated slug
           description: productData.description || "",
           brand: productData.brand,
           basePrice: productData.basePrice,
@@ -57,6 +68,7 @@ const createProduct: RequestHandler = async (req, res) => {
         await tx.productImage.createMany({
           data: productData.images.map((img) => ({
             url: img.url,
+            // publicId: img.publicId, // Store Cloudinary publicId
             isThumbnail: img.isThumbnail || false,
             order: img.order || 0,
             productId: product.id,
@@ -74,7 +86,7 @@ const createProduct: RequestHandler = async (req, res) => {
       });
     });
 
-    // 4. Return success response
+    // 5. Return success response
     createResponse(
       res,
       201,
