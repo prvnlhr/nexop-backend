@@ -38,8 +38,10 @@ router.get(
 );
 
 //variants
-router.get("/variants", variantController.getProductVariants);
+// router.get("/variants", variantController.getProductVariants);
+// router.put("/variants/:variantSku", variantController.updateVariant);
+
 router.post("/variants", variantController.createVariants);
-router.put("/variants/:variantSku", variantController.updateVariant);
+router.patch("/variants", variantController.updateProductVariants);
 
 export default router;
