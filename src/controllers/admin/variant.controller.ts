@@ -264,7 +264,19 @@ interface UpdateVariantRequest {
 //   }
 // };
 
-// new controllers ----------
+// NEW CONTROLLER FUNCTIONS ----------------------------------------------
+
+interface UpdateVariantPayload {
+  id: number;
+  name: string;
+  slug: string;
+  sku: string;
+  price: number;
+  stock: number;
+  status: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK";
+  attributes: { attributeId: number; optionId: number }[];
+  images: { url: string; publicId: string; order: number }[];
+}
 
 interface CreateVariantPayload {
   productId: number;
@@ -277,7 +289,6 @@ interface CreateVariantPayload {
   attributes: { attributeId: number; optionId: number }[];
   images: { url: string; publicId: string; order: number }[];
 }
-
 const createVariants: RequestHandler = async (req, res) => {
   try {
     const {
@@ -561,18 +572,6 @@ const getProductVariantsData: RequestHandler = async (req, res) => {
     );
   }
 };
-
-interface UpdateVariantPayload {
-  id: number;
-  name: string;
-  slug: string;
-  sku: string;
-  price: number;
-  stock: number;
-  status: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK";
-  attributes: { attributeId: number; optionId: number }[];
-  images: { url: string; publicId: string; order: number }[];
-}
 
 const updateProductVariants: RequestHandler = async (req, res) => {
   try {
