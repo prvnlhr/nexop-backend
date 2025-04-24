@@ -577,7 +577,7 @@ const updateProductVariants: RequestHandler = async (req, res) => {
   try {
     const payloads = req.body as UpdateVariantPayload[];
 
-    console.log("payloads:", payloads);
+    // console.log("payloads:", payloads);
 
     if (!Array.isArray(payloads) || payloads.length === 0) {
       return createResponse(
