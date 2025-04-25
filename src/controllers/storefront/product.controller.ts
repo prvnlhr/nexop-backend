@@ -2,6 +2,32 @@ import { RequestHandler } from "express";
 import prisma from "../../db/prisma";
 import { createResponse } from "../../utils/apiResponseUtils";
 
+// TypeScript interfaces for Prisma query results
+interface Product {
+  id: number;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  brand: string;
+  basePrice: number;
+  images: { url: string }[];
+  variants: Variant[];
+  category: { id: number; name: string; slug: string };
+}
+
+interface Variant {
+  id: number;
+  name: string;
+  price: number;
+  images: { url: string }[];
+  attributes: VariantAttribute[];
+}
+
+interface VariantAttribute {
+  attributeId: number;
+  optionId: number;
+}
+
 // TypeScript interfaces for response data
 interface FormattedProduct {
   id: number;
@@ -9,10 +35,10 @@ interface FormattedProduct {
   slug: string;
   description: string | null;
   brand: string;
-  basePrice: number;
-  thumbnail?: string;
-  minPrice: number;
-  category?: { id: number; name: string; slug: string };
+  price: number;
+  image?: string;
+  variantAttributes?: { attributeId: number; optionId: number }[] | null;
+  category: { id: number; name: string; slug: string };
 }
 
 interface AttributeResponse {
@@ -50,14 +76,220 @@ interface NoProductsResponse {
   message: string;
 }
 
-type GetCategoryProductsResponse =
-  | ProductsWithAttributesResponse
-  | ProductsWithSubcategoriesResponse
-  | NoProductsResponse;
+function parseAndValidateFilters(
+  queryParams: Record<string, string | string[]>,
+  attributes: { id: number; options: { id: number }[] }[]
+): [Map<number, Set<number>>, string[]] {
+  const optionFiltersByAttribute = new Map<number, Set<number>>();
+  const invalidParams: string[] = [];
+
+  for (const [key, value] of Object.entries(queryParams)) {
+    if (!key.startsWith("attr_")) continue;
+
+    const attributeId = parseInt(key.replace("attr_", ""), 10);
+    if (isNaN(attributeId)) {
+      invalidParams.push(key);
+      continue;
+    }
+
+    const attribute = attributes.find((attr) => attr.id === attributeId);
+    if (!attribute) {
+      invalidParams.push(`attr_${attributeId}`);
+      continue;
+    }
+
+    // Parse option IDs efficiently
+    const optionIds = parseOptionIds(value);
+    if (optionIds.length === 0) {
+      invalidParams.push(`${key}=${value}`);
+      continue;
+    }
+
+    // Validate against attribute options
+    const validOptionIds = validateOptionIds(optionIds, attribute.options);
+    if (validOptionIds.length === 0) {
+      invalidParams.push(`attr_${attributeId}=${optionIds.join(",")}`);
+      continue;
+    }
+
+    // Track invalid IDs if any
+    if (validOptionIds.length < optionIds.length) {
+      const invalidIds = optionIds.filter((id) => !validOptionIds.includes(id));
+      invalidParams.push(`attr_${attributeId}=${invalidIds.join(",")}`);
+    }
+
+    // Store valid filters
+    const existingOptionIds =
+      optionFiltersByAttribute.get(attributeId) || new Set<number>();
+    validOptionIds.forEach((id) => existingOptionIds.add(id));
+    optionFiltersByAttribute.set(attributeId, existingOptionIds);
+  }
+
+  return [optionFiltersByAttribute, invalidParams];
+}
+
+function parseOptionIds(value: string | string[]): number[] {
+  if (Array.isArray(value)) {
+    return value.map((v) => parseInt(v, 10)).filter((id) => !isNaN(id));
+  }
+  if (typeof value === "string" && value.includes(",")) {
+    return value
+      .split(",")
+      .map((v) => parseInt(v.trim(), 10))
+      .filter((id) => !isNaN(id));
+  }
+  return [parseInt(value, 10)].filter((id) => !isNaN(id));
+}
+
+function validateOptionIds(
+  optionIds: number[],
+  validOptions: { id: number }[]
+): number[] {
+  const validOptionIds = new Set(validOptions.map((opt) => opt.id));
+  return optionIds.filter((id) => validOptionIds.has(id));
+}
+
+async function fetchProductsWithVariants(
+  categoryId: number,
+  hasFilters: boolean
+): Promise<Product[]> {
+  return prisma.product.findMany({
+    where: {
+      categoryId,
+      status: "PUBLISHED",
+      ...(hasFilters && {
+        variants: {
+          some: {
+            status: "ACTIVE",
+            stock: { gt: 0 },
+          },
+        },
+      }),
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      brand: true,
+      basePrice: true,
+      images: {
+        where: { isThumbnail: true },
+        take: 1,
+        select: { url: true },
+      },
+      variants: {
+        where: {
+          status: "ACTIVE",
+          stock: { gt: 0 },
+        },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          images: {
+            select: { url: true },
+            orderBy: { order: "asc" },
+          },
+          attributes: {
+            select: {
+              attributeId: true,
+              optionId: true,
+            },
+          },
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+async function getFilteredAttributes(
+  categoryId: number,
+  attributes: {
+    id: number;
+    name: string;
+    isFilterable: boolean;
+    options: { id: number; value: string }[];
+  }[]
+): Promise<AttributeResponse[]> {
+  // For performance, we can skip fetching relevant options if we know all are relevant
+  // Or implement a more optimized query if needed
+  return attributes.map((attr) => ({
+    id: attr.id,
+    name: attr.name,
+    isFilterable: attr.isFilterable,
+    options: attr.options.map((opt) => ({ id: opt.id, value: opt.value })),
+  }));
+}
+
+function formatProductsResponse(
+  products: Product[],
+  optionFiltersByAttribute: Map<number, Set<number>>
+): FormattedProduct[] {
+  // No filters case - return base products
+  if (optionFiltersByAttribute.size === 0) {
+    return products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug as string,
+      description: product.description,
+      brand: product.brand,
+      price: product.basePrice,
+      image: product.images[0]?.url,
+      variantAttributes: null,
+      category: product.category,
+    }));
+  }
+
+  // With filters - find matching variants
+  const result: FormattedProduct[] = [];
+
+  for (const product of products) {
+    const matchingVariants = product.variants.filter((variant) =>
+      Array.from(optionFiltersByAttribute.entries()).every(
+        ([attributeId, optionIds]) =>
+          variant.attributes.some(
+            (attr) =>
+              attr.attributeId === attributeId && optionIds.has(attr.optionId)
+          )
+      )
+    );
+
+    if (matchingVariants.length > 0) {
+      result.push(
+        ...matchingVariants.map((variant) => ({
+          id: product.id,
+          name: variant.name,
+          slug: product.slug as string,
+          description: product.description,
+          brand: product.brand,
+          price: variant.price,
+          image: variant.images[0]?.url || product.images[0]?.url,
+          variantAttributes: variant.attributes.map((attr) => ({
+            attributeId: attr.attributeId,
+            optionId: attr.optionId,
+          })),
+          category: product.category,
+        }))
+      );
+    }
+  }
+
+  return result;
+}
 
 export const getCategoryProducts: RequestHandler = async (req, res) => {
   try {
     const { categorySlug } = req.params;
+    const queryParams = req.query as Record<string, string | string[]>;
 
     if (!categorySlug) {
       return createResponse(
@@ -68,12 +300,18 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
       );
     }
 
-    // 1. Find the category by slug
+    // 1. Find the category by slug with minimal data needed
     const category = await prisma.category.findUnique({
       where: { slug: categorySlug },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
         attributes: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            isFilterable: true,
             options: {
               where: { active: true },
               select: { id: true, value: true },
@@ -97,68 +335,31 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
 
     // Case 1: Category has direct products
     if (category._count.products > 0) {
-      const products = await prisma.product.findMany({
-        where: {
-          categoryId: category.id,
-          status: "PUBLISHED",
-        },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          description: true,
-          brand: true,
-          basePrice: true,
-          images: {
-            where: { isThumbnail: true },
-            take: 1,
-            select: { url: true },
-          },
-          variants: {
-            where: { status: "ACTIVE" },
-            take: 1,
-            orderBy: { price: "asc" },
-            select: { price: true },
-          },
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      });
+      // Parse and validate query parameters in one pass
+      const [optionFiltersByAttribute, invalidParams] = parseAndValidateFilters(
+        queryParams,
+        category.attributes
+      );
 
-      const formattedProducts: FormattedProduct[] = products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        slug: product.slug as string,
-        description: product.description,
-        brand: product.brand,
-        basePrice: product.basePrice,
-        thumbnail: product.images[0]?.url,
-        minPrice: product.variants[0]?.price || product.basePrice,
-        category: product.category!, // Non-null due to schema
-      }));
+      // Get all products with variants in a single optimized query
+      const [products, filteredAttributes] = await Promise.all([
+        fetchProductsWithVariants(
+          category.id,
+          optionFiltersByAttribute.size > 0
+        ),
+        getFilteredAttributes(category.id, category.attributes),
+      ]);
 
-      const attributes: AttributeResponse[] = category.attributes.map(
-        (attr) => ({
-          id: attr.id,
-          name: attr.name,
-          isFilterable: attr.isFilterable,
-          options: attr.options.map((opt) => ({
-            id: opt.id,
-            value: opt.value,
-          })),
-        })
+      // Filter and format products
+      const formattedProducts = formatProductsResponse(
+        products,
+        optionFiltersByAttribute
       );
 
       const response: ProductsWithAttributesResponse = {
         type: "PRODUCTS_WITH_ATTRIBUTES",
         products: formattedProducts,
-        attributes,
+        attributes: filteredAttributes,
         category: {
           id: category.id,
           name: category.name,
@@ -171,11 +372,15 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
         200,
         response,
         null,
-        "Products with attributes fetched successfully"
+        invalidParams.length > 0
+          ? `Products fetched, but ignored invalid query parameters: ${invalidParams.join(
+              ", "
+            )}`
+          : "Products with attributes fetched successfully"
       );
     }
 
-    // Case 2: No direct products - get child categories and their products
+    // |> CASE 2 : No direct products - get child categories and their products
     const childCategories = await prisma.category.findMany({
       where: {
         parentId: category.id,
@@ -263,9 +468,9 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
       slug: product.slug as string,
       description: product.description,
       brand: product.brand,
-      basePrice: product.basePrice,
-      thumbnail: product.images[0]?.url,
-      minPrice: product.variants[0]?.price || product.basePrice,
+      price: product.variants[0]?.price || product.basePrice,
+      image: product.images[0]?.url,
+      variantAttributes: null,
       category: product.category!,
     }));
 
@@ -314,6 +519,7 @@ export const getCategoryProducts: RequestHandler = async (req, res) => {
   }
 };
 
+// |> GET PRODCUT DETAILS ----------------------------------------------------------------------------------------------------------------------------
 interface ProductDetailsResponse {
   product: {
     id: number;
@@ -324,6 +530,7 @@ interface ProductDetailsResponse {
     price: number;
     category: { id: number; name: string; slug: string };
     images: { url: string; isThumbnail?: boolean }[];
+    variantId?: number;
   };
   attributes: {
     id: number;
@@ -345,7 +552,6 @@ export const getProductDetails: RequestHandler = async (req, res) => {
         "categorySlug and productSlug are required"
       );
     }
-    // console.log("1: Params:", { categorySlug, productSlug, queryParams });
 
     // Fetch the product with details
     const product = await prisma.product.findFirst({
@@ -389,8 +595,6 @@ export const getProductDetails: RequestHandler = async (req, res) => {
       },
     });
 
-    // console.log("2: Product:", product ? product.id : "Not found");
-
     if (!product) {
       return createResponse(
         res,
@@ -399,8 +603,6 @@ export const getProductDetails: RequestHandler = async (req, res) => {
         "Product not found or category mismatch"
       );
     }
-
-    // console.log("3: Category ID:", product.category.id);
 
     // Fetch attributes and options for the product's category
     const attributes = await prisma.attribute.findMany({
@@ -424,23 +626,12 @@ export const getProductDetails: RequestHandler = async (req, res) => {
       });
     });
 
-    // console.log("4: Relevant optionIds:", Array.from(relevantOptionIds));
-
     // Filter attributes.options to include only relevant options
     const filteredAttributes = attributes.map((attr) => ({
       id: attr.id,
       name: attr.name,
       options: attr.options.filter((opt) => relevantOptionIds.has(opt.id)),
     }));
-
-    // console.log(
-    //   "5: Filtered Attributes:",
-    //   filteredAttributes.map((attr) => ({
-    //     id: attr.id,
-    //     name: attr.name,
-    //     options: attr.options.map((opt) => ({ id: opt.id, value: opt.value })),
-    //   }))
-    // );
 
     // Parse and validate query parameters (e.g., attr_1=1)
     let selectedVariant: (typeof product.variants)[number] | undefined;
@@ -451,36 +642,20 @@ export const getProductDetails: RequestHandler = async (req, res) => {
       const attributeId = parseInt(key.replace("attr_", ""), 10);
       const optionId = parseInt(value, 10);
       if (isNaN(attributeId) || isNaN(optionId)) {
-        // console.log("6: Invalid query param:", { key, value });
         invalidParams.push(`${key}=${value}`);
         continue;
       }
       const attribute = attributes.find((attr) => attr.id === attributeId);
-      // console.log("7: Checking attributeId:", attributeId, "Found:", attribute);
       if (!attribute) {
-        console.log("8: Invalid attribute ID:", attributeId);
         invalidParams.push(`attr_${attributeId}`);
         continue;
       }
       if (!attribute.options.some((opt) => opt.id === optionId)) {
-        // console.log(
-        //   "9: Invalid option ID:",
-        //   optionId,
-        //   "for attribute:",
-        //   attributeId
-        // );
         invalidParams.push(`attr_${attributeId}=${optionId}`);
         continue;
       }
       optionFilters.push({ attributeId, optionId });
     }
-
-    // console.log(
-    //   "10: Option filters:",
-    //   optionFilters,
-    //   "Invalid params:",
-    //   invalidParams
-    // );
 
     // Find matching variant
     if (optionFilters.length > 0) {
@@ -494,11 +669,6 @@ export const getProductDetails: RequestHandler = async (req, res) => {
       );
     }
 
-    // console.log(
-    //   "11: Selected variant:",
-    //   selectedVariant ? selectedVariant.id : "None"
-    // );
-
     // Merge variant data into product
     const mergedProduct = {
       id: product.id,
@@ -508,7 +678,13 @@ export const getProductDetails: RequestHandler = async (req, res) => {
       brand: product.brand,
       price: selectedVariant ? selectedVariant.price : product.basePrice,
       category: product.category,
-      images: selectedVariant ? selectedVariant.images : product.images,
+      images: selectedVariant
+        ? selectedVariant.images.map((img) => ({
+            url: img.url,
+            isThumbnail: false,
+          }))
+        : product.images,
+      variantId: selectedVariant?.id,
     };
 
     // Format the response
@@ -540,6 +716,7 @@ export const getProductDetails: RequestHandler = async (req, res) => {
     );
   }
 };
+
 export const productsController = {
   getCategoryProducts,
   getProductDetails,

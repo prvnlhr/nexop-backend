@@ -17,6 +17,7 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   addresses Address[]
+  cart      Cart?     @relation
 
   @@index([email])
 }
@@ -91,6 +92,7 @@ model Product {
   variants    Variant[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  cartItems   CartItem[]     @relation
 
   @@index([categoryId])
   @@index([status])
@@ -130,6 +132,7 @@ model Variant {
   images     VariantImage[]
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
+  CartItem   CartItem[]
 
   @@index([productId])
   @@index([sku])
@@ -166,5 +169,36 @@ model VariantImage {
   variantId Int
   createdAt DateTime @default(now())
 
+  @@index([variantId])
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique // One cart per user
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  variant   Variant? @relation(fields: [variantId], references: [id])
+  variantId Int?
+  quantity  Int      @default(1)
+  price     Float // Snapshot of price at time of adding
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId, variantId]) // Prevent duplicate items
+  @@index([cartId])
+  @@index([productId])
   @@index([variantId])
 }
