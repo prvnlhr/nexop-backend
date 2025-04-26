@@ -3,6 +3,8 @@ import { categoryController } from "../../controllers/storefront/category.contro
 import { productsController } from "../../controllers/storefront/product.controller";
 import { cartController } from "../../controllers/storefront/cart.controller";
 import { checkoutController } from "../../controllers/storefront/checkout.controller";
+import { searchController } from "../../controllers/storefront/search.controller";
+
 const router = Router();
 
 // Categories
@@ -23,5 +25,8 @@ router.delete("/cart/remove", cartController.removeFromCart);
 
 // Checkout
 router.get("/checkout/:userId", checkoutController.getCheckoutDetails);
+
+// Search
+router.get("/search", searchController.searchProducts);
 
 export default router;
