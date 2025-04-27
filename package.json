@@ -2,18 +2,15 @@
   "name": "nexop-backend",
   "version": "1.0.0",
   "main": "index.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.ts",
-    "build": "tsc && prisma generate",
-    "start": "node dist/index.js",
-    "migrate:deploy": "prisma migrate deploy",
-    "postinstall": "npm run build",
-    "prisma:studio": "prisma studio",
-    "prisma:reset": "prisma migrate reset --force"
-
-    
-  },
+"scripts": {
+  "dev": "nodemon src/index.ts",
+  "build": "prisma generate && tsc && (cp -r src/generated/prisma dist/generated/prisma || xcopy src\\generated\\prisma dist\\generated\\prisma /E /I /Y)",
+  "start": "node dist/index.js",
+  "migrate:deploy": "prisma migrate deploy",
+  "postinstall": "npm run build",
+  "prisma:studio": "prisma studio",
+  "clean": "rm -rf dist/ src/generated/"
+},
   "keywords": [],
   "author": "Praveen Lohar",
   "license": "ISC",
