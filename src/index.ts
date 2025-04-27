@@ -8,10 +8,22 @@ dotenv.config();
 const app: Application = express();
 const PORT: number = parseInt(process.env.PORT as string, 10) || 9000;
 // app.use(cors());
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://nexop-next.vercel.app",
+  process.env.FRONTEND_URL,
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3000", // Allow only your frontend origin
-    credentials: true, // Allow cookies and credentials
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
