@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "main": "index.ts",
 "scripts": {
-  "dev": "nodemon src/index.ts",
-  "build": "prisma generate && tsc && (cp -r src/generated/prisma dist/generated/prisma || xcopy src\\generated\\prisma dist\\generated\\prisma /E /I /Y)",
-  "start": "node dist/index.js",
-  "migrate:deploy": "prisma migrate deploy",
-  "postinstall": "npm run build",
-  "prisma:studio": "prisma studio",
-  "clean": "rm -rf dist/ src/generated/"
+"dev": "nodemon src/index.ts",
+    "build": "prisma generate && tsc && mkdir -p dist/generated && cp -r src/generated/prisma dist/generated/prisma",
+    "start": "node dist/index.js",
+    "migrate:deploy": "prisma migrate deploy",
+    "postinstall": "npm run build",
+    "prisma:studio": "prisma studio",
+    "clean": "rm -rf dist/ src/generated/"
 },
   "keywords": [],
   "author": "Praveen Lohar",
