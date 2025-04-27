@@ -7,11 +7,10 @@ dotenv.config();
 
 const app: Application = express();
 const PORT: number = parseInt(process.env.PORT as string, 10) || 9000;
-// app.use(cors());
+
 const allowedOrigins = [
   "http://localhost:3000",
   "https://nexop-next.vercel.app",
-  process.env.FRONTEND_URL,
 ];
 
 app.use(
@@ -40,5 +39,5 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 app.use("/api", router);
 
 app.listen(PORT, () => {
-  console.log(`Server running on: http://localhost:${PORT}`);
+  console.log(`Server running on: PORT-${PORT}`);
 });

@@ -78,7 +78,7 @@ const signUpController: RequestHandler = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
+      maxAge: 14 * 24 * 60 * 60 * 1000,
     });
 
     return createResponse(
@@ -174,9 +174,7 @@ const signInController: RequestHandler = async (req, res) => {
 const signOutController: RequestHandler = async (req, res) => {
   try {
     // Clear the HTTP-only auth token cookie
-    console.log("xmlmlmlmlmlmlmlmlmlmlmlmlml");
     let token = req.cookies.auth_token;
-    console.log(" tokenxxxx:", token);
 
     res.clearCookie("auth_token", {
       httpOnly: true,
