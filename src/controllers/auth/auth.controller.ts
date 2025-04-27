@@ -5,6 +5,13 @@ import bcrypt from "bcrypt";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
 
+const COOKIE_CONFIG = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none" as const,
+  maxAge: 14 * 24 * 60 * 60 * 1000,
+  path: "/",
+};
 const signUpSchema = z.object({
   fullname: z
     .string()
@@ -74,12 +81,7 @@ const signUpController: RequestHandler = async (req, res) => {
     });
 
     // Set cookie
-    res.cookie("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      maxAge: 14 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("auth_token", token, COOKIE_CONFIG);
 
     return createResponse(
       res,
@@ -147,12 +149,7 @@ const signInController: RequestHandler = async (req, res) => {
     });
 
     // Set cookie
-    res.cookie("auth_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
-    });
+    res.cookie("auth_token", token, COOKIE_CONFIG);
 
     return createResponse(
       res,
@@ -176,12 +173,7 @@ const signOutController: RequestHandler = async (req, res) => {
     // Clear the HTTP-only auth token cookie
     let token = req.cookies.auth_token;
 
-    res.clearCookie("auth_token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-    });
+    res.clearCookie("auth_token", COOKIE_CONFIG);
 
     // Clear the client-readable session data cookie
     res.clearCookie("session_data", {
