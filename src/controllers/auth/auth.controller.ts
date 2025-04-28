@@ -34,6 +34,7 @@ const signInSchema = z.object({
 const createJwtToken = (payload: {
   userId: string;
   email: string;
+  fullname: string;
   role: string;
 }) => {
   return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "14d" });
@@ -77,6 +78,7 @@ const signUpController: RequestHandler = async (req, res) => {
     const token = createJwtToken({
       userId: user.id,
       email: user.email,
+      fullname: user.fullname,
       role: user.role,
     });
 
@@ -141,20 +143,10 @@ const signInController: RequestHandler = async (req, res) => {
       return createResponse(res, 403, null, "Invalid role for this user");
     }
 
-    // Generate JWT
-    const token = createJwtToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    // Set cookie
-    res.cookie("auth_token", token, COOKIE_CONFIG);
-
     return createResponse(
       res,
       200,
-      { id: user.id, fullName: user.fullname, email, role },
+      { id: user.id, fullname: user.fullname, email, role },
       null,
       "Sign-in successful"
     );
@@ -204,6 +196,7 @@ const signOutController: RequestHandler = async (req, res) => {
 export const sessionController: RequestHandler = async (req, res) => {
   try {
     let token = req.cookies.auth_token;
+    console.log(" token:", token);
     if (!token && req.headers.cookie) {
       const cookies = req.headers.cookie.split(";").map((c) => c.trim());
       const authCookie = cookies.find((c) => c.startsWith("auth_token="));
@@ -211,6 +204,7 @@ export const sessionController: RequestHandler = async (req, res) => {
     }
 
     if (!token) {
+      console.log(" token:", token, "No session token found");
       return createResponse(
         res,
         200,
@@ -229,6 +223,7 @@ export const sessionController: RequestHandler = async (req, res) => {
     });
 
     if (!user) {
+      console.log(" user:", user, "clearing...");
       res.clearCookie("auth_token");
       return createResponse(res, 200, { user: null }, "User not found");
     }
