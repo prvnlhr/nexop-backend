@@ -418,6 +418,70 @@ const updateAttribute: RequestHandler = async (req, res) => {
     );
   }
 };
+const deleteAttribute: RequestHandler = async (req, res) => {
+  try {
+    const { attributeId } = req.params;
+
+    // 1. Validate attribute ID
+    if (!attributeId || isNaN(parseInt(attributeId))) {
+      return createResponse(res, 400, null, "Valid attribute ID is required");
+    }
+
+    const attributeIdNum = parseInt(attributeId);
+
+    // 2. Check if attribute exists
+    const attribute = await prisma.attribute.findUnique({
+      where: { id: attributeIdNum },
+      include: {
+        options: { select: { id: true } },
+        VariantAttribute: { select: { variantId: true } },
+      },
+    });
+
+    if (!attribute) {
+      return createResponse(res, 404, null, "Attribute not found");
+    }
+
+    // 3. Check for dependencies
+    if (attribute.VariantAttribute.length > 0) {
+      return createResponse(
+        res,
+        400,
+        null,
+        "Cannot delete attribute associated with variants"
+      );
+    }
+
+    // 4. Delete attribute and its options within a transaction
+    await prisma.$transaction([
+      // Delete associated options
+      prisma.attributeOption.deleteMany({
+        where: { attributeId: attributeIdNum },
+      }),
+      // Delete the attribute
+      prisma.attribute.delete({
+        where: { id: attributeIdNum },
+      }),
+    ]);
+
+    // 5. Return success response
+    createResponse(
+      res,
+      200,
+      { success: true },
+      null,
+      "Attribute deleted successfully"
+    );
+  } catch (error) {
+    console.error("Delete Attribute Error:", error);
+    createResponse(
+      res,
+      500,
+      null,
+      error instanceof Error ? error.message : "Internal server error"
+    );
+  }
+};
 
 export const attributeController = {
   createAttribute,
@@ -425,4 +489,5 @@ export const attributeController = {
   getAttributesByCategory,
   getAttributeById,
   updateAttribute,
+  deleteAttribute,
 };

@@ -3,15 +3,7 @@ import { createResponse } from "../../utils/apiResponseUtils";
 import prisma from "../../db/prisma";
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import jwt from "jsonwebtoken";
 
-const COOKIE_CONFIG = {
-  httpOnly: true,
-  secure: true,
-  sameSite: "none" as const,
-  maxAge: 14 * 24 * 60 * 60 * 1000,
-  path: "/",
-};
 const signUpSchema = z.object({
   fullname: z
     .string()
@@ -31,16 +23,16 @@ const signInSchema = z.object({
   role: z.enum(["customer", "admin"]),
 });
 
-const createJwtToken = (payload: {
-  userId: string;
-  email: string;
-  fullname: string;
-  role: string;
-}) => {
-  return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "14d" });
+const AuthMessages = {
+  USER_NOT_FOUND: "No account found with this email",
+  INVALID_PASSWORD: "Incorrect password",
+  EMAIL_EXISTS: "Email already exists",
+  INVALID_ROLE: "Invalid role for this user",
+  AUTH_ERROR: "Authentication failed. Please try again later.",
+  NETWORK_ERROR: "Network error. Please check your connection.",
 };
 
-const signUpController: RequestHandler = async (req, res) => {
+export const signUpController: RequestHandler = async (req, res) => {
   try {
     // Validate input
     const parsed = signUpSchema.safeParse(req.body);
@@ -58,7 +50,7 @@ const signUpController: RequestHandler = async (req, res) => {
     // Check if email exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return createResponse(res, 400, null, "Email already exists");
+      return createResponse(res, 400, null, AuthMessages.EMAIL_EXISTS);
     }
 
     // Hash password
@@ -74,23 +66,17 @@ const signUpController: RequestHandler = async (req, res) => {
       },
     });
 
-    // Generate JWT
-    const token = createJwtToken({
-      userId: user.id,
-      email: user.email,
-      fullname: user.fullname,
-      role: user.role,
-    });
-
-    // Set cookie
-    res.cookie("auth_token", token, COOKIE_CONFIG);
-
     return createResponse(
       res,
       201,
-      { id: user.id, fullname, email, role },
+      {
+        id: user.id,
+        fullname: user.fullname,
+        email: user.email,
+        role: user.role,
+      },
       null,
-      "Sign-up successful"
+      "Sign-up successful. Please sign in."
     );
   } catch (error: any) {
     return createResponse(
@@ -102,16 +88,7 @@ const signUpController: RequestHandler = async (req, res) => {
   }
 };
 
-const AuthMessages = {
-  USER_NOT_FOUND: "No account found with this email",
-  INVALID_PASSWORD: "Incorrect password",
-  EMAIL_EXISTS: "Email already exists",
-  INVALID_ROLE: "Invalid role for this user",
-  AUTH_ERROR: "Authentication failed. Please try again later.",
-  NETWORK_ERROR: "Network error. Please check your connection.",
-};
-
-const signInController: RequestHandler = async (req, res) => {
+export const signInController: RequestHandler = async (req, res) => {
   try {
     // Validate input
     const parsed = signInSchema.safeParse(req.body);
@@ -132,21 +109,27 @@ const signInController: RequestHandler = async (req, res) => {
       return createResponse(res, 401, null, AuthMessages.USER_NOT_FOUND);
     }
 
+    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
       return createResponse(res, 401, null, AuthMessages.INVALID_PASSWORD);
     }
 
     // Validate role
     if (user.role !== role) {
-      return createResponse(res, 403, null, "Invalid role for this user");
+      return createResponse(res, 403, null, AuthMessages.INVALID_ROLE);
     }
 
+    // Return user data (NextAuth will handle session creation)
     return createResponse(
       res,
       200,
-      { id: user.id, fullname: user.fullname, email, role },
+      {
+        id: user.id,
+        fullname: user.fullname,
+        email: user.email,
+        role: user.role,
+      },
       null,
       "Sign-in successful"
     );
@@ -160,78 +143,44 @@ const signInController: RequestHandler = async (req, res) => {
   }
 };
 
-const signOutController: RequestHandler = async (req, res) => {
+export const signOutController: RequestHandler = async (req, res) => {
   try {
-    // Clear the HTTP-only auth token cookie
-    let token = req.cookies.auth_token;
-
-    res.clearCookie("auth_token", COOKIE_CONFIG);
-
-    // Clear the client-readable session data cookie
-    res.clearCookie("session_data", {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-    });
-
+    // In NextAuth, sign-out is handled client-side
     return createResponse(
       res,
       200,
       { success: true },
       null,
-      "Sign-out successful"
+      "Sign-out should be handled client-side via NextAuth"
     );
   } catch (error: any) {
-    console.error("Sign-out error:", error);
     return createResponse(
       res,
       500,
       null,
-      error.message || "Failed to sign out"
+      error.message || "Failed to process sign-out"
     );
   }
 };
 
 export const sessionController: RequestHandler = async (req, res) => {
   try {
-    let token = req.cookies.auth_token;
-    console.log(" token:", token);
-    if (!token && req.headers.cookie) {
-      const cookies = req.headers.cookie.split(";").map((c) => c.trim());
-      const authCookie = cookies.find((c) => c.startsWith("auth_token="));
-      token = authCookie?.split("=")[1];
-    }
-
-    if (!token) {
-      console.log(" token:", token, "No session token found");
-      return createResponse(
-        res,
-        200,
-        { user: null },
-        null,
-        "No session token found"
-      );
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      userId: string;
-    };
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, email: true, fullname: true, role: true },
-    });
-
-    if (!user) {
-      console.log(" user:", user, "clearing...");
-      res.clearCookie("auth_token");
-      return createResponse(res, 200, { user: null }, "User not found");
-    }
-
-    return createResponse(res, 200, { user }, null, "Session valid");
-  } catch (error) {
-    res.clearCookie("auth_token");
-    return createResponse(res, 200, { user: null }, "Invalid session");
+    // With NextAuth, session is typically handled client-side
+    // This endpoint may not be needed if using NextAuth's built-in session handling
+    return createResponse(
+      res,
+      200,
+      { user: null },
+      null,
+      "Session handling is managed by NextAuth client-side"
+    );
+  } catch (error: any) {
+    return createResponse(
+      res,
+      500,
+      null,
+      error.message || "Failed to check session"
+    );
   }
 };
 

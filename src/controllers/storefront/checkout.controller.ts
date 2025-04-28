@@ -50,7 +50,9 @@ interface CheckoutResponse {
 export const getCheckoutDetails: RequestHandler = async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log(" userId:", userId);
     const { type, product_id, variant_id } = req.query;
+    console.log(" type:", type);
 
     if (!userId) {
       return createResponse(res, 400, null, "User ID is required");

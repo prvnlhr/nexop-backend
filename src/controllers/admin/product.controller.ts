@@ -323,9 +323,84 @@ const updateProduct: RequestHandler = async (req, res) => {
   }
 };
 
+const deleteProduct: RequestHandler = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    // 1. Validate product ID
+    if (!productId || isNaN(parseInt(productId))) {
+      return createResponse(res, 400, null, "Valid product ID is required");
+    }
+
+    const productIdNum = parseInt(productId);
+
+    // 2. Check if product exists
+    const product = await prisma.product.findUnique({
+      where: { id: productIdNum },
+      include: {
+        variants: { select: { id: true } },
+        cartItems: { select: { id: true } },
+      },
+    });
+
+    if (!product) {
+      return createResponse(res, 404, null, "Product not found");
+    }
+
+    // 3. Check for dependencies
+    if (product.variants.length > 0) {
+      return createResponse(
+        res,
+        400,
+        null,
+        "Cannot delete product with associated variants"
+      );
+    }
+
+    if (product.cartItems.length > 0) {
+      return createResponse(
+        res,
+        400,
+        null,
+        "Cannot delete product with items in user carts"
+      );
+    }
+
+    // 4. Delete product within a transaction
+    await prisma.$transaction([
+      // Delete associated images
+      prisma.productImage.deleteMany({
+        where: { productId: productIdNum },
+      }),
+      // Delete the product
+      prisma.product.delete({
+        where: { id: productIdNum },
+      }),
+    ]);
+
+    // 5. Return success response
+    createResponse(
+      res,
+      200,
+      { success: true },
+      null,
+      "Product deleted successfully"
+    );
+  } catch (error) {
+    console.error("Delete Product Error:", error);
+    createResponse(
+      res,
+      500,
+      null,
+      error instanceof Error ? error.message : "Internal server error"
+    );
+  }
+};
+
 export const productController = {
   getAllProducts,
   createProduct,
   getProductById,
   updateProduct,
+  deleteProduct,
 };

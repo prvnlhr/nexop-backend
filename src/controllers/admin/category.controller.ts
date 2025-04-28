@@ -264,9 +264,89 @@ const updateCategory: RequestHandler = async (req, res) => {
   }
 };
 
+const deleteCategory: RequestHandler = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    // 1. Validate category ID
+    if (isNaN(Number(categoryId))) {
+      return createResponse(res, 400, null, "Invalid category ID");
+    }
+
+    const categoryIdNum = Number(categoryId);
+
+    // 2. Check if category exists
+    const category = await prisma.category.findUnique({
+      where: { id: categoryIdNum },
+      include: {
+        children: { select: { id: true } },
+        products: { select: { id: true } },
+        attributes: { select: { id: true } },
+      },
+    });
+
+    if (!category) {
+      return createResponse(res, 404, null, "Category not found");
+    }
+
+    // 3. Check for dependencies
+    if (category.children.length > 0) {
+      return createResponse(
+        res,
+        400,
+        null,
+        "Cannot delete category with child categories"
+      );
+    }
+
+    if (category.products.length > 0) {
+      return createResponse(
+        res,
+        400,
+        null,
+        "Cannot delete category with associated products"
+      );
+    }
+
+    if (category.attributes.length > 0) {
+      return createResponse(
+        res,
+        400,
+        null,
+        "Cannot delete category with associated attributes"
+      );
+    }
+
+    // 4. Delete category within a transaction
+    await prisma.$transaction([
+      prisma.category.delete({
+        where: { id: categoryIdNum },
+      }),
+    ]);
+
+    // 5. Return success response
+    createResponse(
+      res,
+      200,
+      { success: true },
+      null,
+      "Category deleted successfully"
+    );
+  } catch (error) {
+    console.error("Delete Category Error:", error);
+    createResponse(
+      res,
+      500,
+      null,
+      error instanceof Error ? error.message : "Internal server error"
+    );
+  }
+};
+
 export const categoryController = {
   getAllCategories,
   createCategory,
   getCategoryById,
   updateCategory,
+  deleteCategory,
 };

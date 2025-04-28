@@ -728,10 +728,79 @@ const updateProductVariants: RequestHandler = async (req, res) => {
   }
 };
 
+const deleteVariant: RequestHandler = async (req, res) => {
+  try {
+    const { variantId } = req.params;
+
+    // 1. Validate variant ID
+    if (!variantId || isNaN(parseInt(variantId))) {
+      return createResponse(res, 400, null, "Valid variant ID is required");
+    }
+
+    const variantIdNum = parseInt(variantId);
+
+    // 2. Check if variant exists
+    const variant = await prisma.variant.findUnique({
+      where: { id: variantIdNum },
+      include: {
+        CartItem: { select: { id: true } },
+      },
+    });
+
+    if (!variant) {
+      return createResponse(res, 404, null, "Variant not found");
+    }
+
+    // 3. Check for dependencies
+    if (variant.CartItem.length > 0) {
+      return createResponse(
+        res,
+        400,
+        null,
+        "Cannot delete variant with items in user carts"
+      );
+    }
+
+    // 4. Delete variant and its associated data within a transaction
+    await prisma.$transaction([
+      // Delete associated variant attributes
+      prisma.variantAttribute.deleteMany({
+        where: { variantId: variantIdNum },
+      }),
+      // Delete associated variant images
+      prisma.variantImage.deleteMany({
+        where: { variantId: variantIdNum },
+      }),
+      // Delete the variant
+      prisma.variant.delete({
+        where: { id: variantIdNum },
+      }),
+    ]);
+
+    // 5. Return success response
+    createResponse(
+      res,
+      200,
+      { success: true },
+      null,
+      "Variant deleted successfully"
+    );
+  } catch (error) {
+    console.error("Delete Variant Error:", error);
+    createResponse(
+      res,
+      500,
+      null,
+      error instanceof Error ? error.message : "Internal server error"
+    );
+  }
+};
+
 export const variantController = {
   // getProductVariants,
   createVariants,
   // updateVariant,
   getProductVariantsData,
   updateProductVariants,
+  deleteVariant,
 };
