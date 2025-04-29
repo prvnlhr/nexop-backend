@@ -2,15 +2,15 @@
   "name": "nexop-backend",
   "version": "1.0.0",
   "main": "index.ts",
-"scripts": {
-"dev": "nodemon src/index.ts",
+  "scripts": {
+    "dev": "nodemon src/index.ts",
     "build": "prisma generate && tsc && mkdir -p dist/generated && cp -r src/generated/prisma dist/generated/prisma",
     "start": "node dist/index.js",
     "migrate:deploy": "prisma migrate deploy",
     "postinstall": "npm run build",
     "prisma:studio": "prisma studio",
     "clean": "rm -rf dist/ src/generated/"
-},
+  },
   "keywords": [],
   "author": "Praveen Lohar",
   "license": "ISC",
@@ -25,6 +25,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
+    "stripe": "^18.0.0",
     "zod": "^3.24.3"
   },
   "devDependencies": {

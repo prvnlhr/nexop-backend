@@ -4,7 +4,8 @@ import { productsController } from "../../controllers/storefront/product.control
 import { cartController } from "../../controllers/storefront/cart.controller";
 import { checkoutController } from "../../controllers/storefront/checkout.controller";
 import { searchController } from "../../controllers/storefront/search.controller";
-
+import { orderController } from "../../controllers/storefront/order.controller";
+import { stripeWebhookController } from "../../controllers/storefront/stripeWebhook.controller";
 const router = Router();
 
 // Categories
@@ -25,6 +26,12 @@ router.delete("/cart/remove", cartController.removeFromCart);
 
 // Checkout
 router.get("/checkout/:userId", checkoutController.getCheckoutDetails);
+
+// Order
+router.post("/orders", orderController.createOrder);
+router.get("/orders/:orderId", orderController.getOrderById);
+
+router.post("/stripe/webhook", stripeWebhookController.webhook);
 
 // Search
 router.get("/search", searchController.searchProducts);
