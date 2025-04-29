@@ -1,3 +1,4 @@
+import express from "express";
 import { Router } from "express";
 import { categoryController } from "../../controllers/storefront/category.controller";
 import { productsController } from "../../controllers/storefront/product.controller";
@@ -29,8 +30,10 @@ router.get("/checkout/:userId", checkoutController.getCheckoutDetails);
 
 // Order
 router.post("/orders", orderController.createOrder);
-router.get("/orders/:orderId", orderController.getOrderById);
+router.get("/orders/:orderId", orderController.getOrderDetails);
+router.get("/orders/user-orders/:userId", orderController.getUserOrders);
 
+// Stripe webhook
 router.post("/stripe/webhook", stripeWebhookController.webhook);
 
 // Search

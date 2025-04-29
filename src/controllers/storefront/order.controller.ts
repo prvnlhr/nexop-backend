@@ -220,7 +220,8 @@ const createOrder: RequestHandler = async (req, res) => {
     );
   }
 };
-const getOrderById: RequestHandler = async (req, res) => {
+
+const getOrderDetails: RequestHandler = async (req, res) => {
   try {
     const { orderId } = req.params;
 
@@ -258,7 +259,99 @@ const getOrderById: RequestHandler = async (req, res) => {
   }
 };
 
+interface OrderListResponse {
+  id: string;
+  status: string;
+  totalAmount: number;
+  createdAt: string;
+  itemCount: number;
+  address: {
+    address: string;
+  };
+  items: {
+    name: string;
+    variantName?: string;
+    quantity: number;
+    price: number;
+    thumbnail?: string;
+  }[];
+}
+
+export const getUserOrders: RequestHandler = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return createResponse(res, 400, null, "User ID is required");
+    }
+
+    const orders = await prisma.order.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        address: true,
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+              },
+            },
+            variant: {
+              select: {
+                name: true,
+                images: {
+                  take: 1,
+                  select: {
+                    url: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Format response
+    const formattedOrders = orders.map((order) => ({
+      id: order.id,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      createdAt: order.createdAt.toISOString(),
+      itemCount: order.items.length,
+      address: {
+        address: order.address.address,
+      },
+      items: order.items.map((item) => ({
+        name: item.product.name,
+        variantName: item.variant?.name,
+        quantity: item.quantity,
+        price: item.price,
+        thumbnail: item.variant?.images[0]?.url,
+      })),
+    }));
+
+    createResponse(
+      res,
+      200,
+      formattedOrders,
+      null,
+      "Orders fetched successfully"
+    );
+  } catch (error) {
+    console.error("Get User Orders Error:", error);
+    createResponse(
+      res,
+      500,
+      null,
+      error instanceof Error ? error.message : "Internal server error"
+    );
+  }
+};
+
 export const orderController = {
+  getUserOrders,
   createOrder,
-  getOrderById,
+  getOrderDetails,
 };

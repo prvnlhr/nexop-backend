@@ -28,9 +28,17 @@ app.use(
   })
 );
 
-app.use(express.json());
+// app.use(express.json());
 app.use(cookieParser());
-// Error Handling Middleware
+
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/storefront/stripe/webhook") {
+    express.raw({ type: "application/json" })(req, res, next);
+  } else {
+    express.json()(req, res, next);
+  }
+});
+
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.message);
   res.status(500).json({ error: err.message });
